@@ -13,8 +13,8 @@ import org.jlab.detector.view.DetectorShape2D;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
 import org.jlab.groot.group.DataGroup;
+import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.io.evio.EvioDataBank;
 
 /**
  *
@@ -22,7 +22,7 @@ import org.jlab.io.evio.EvioDataBank;
  */
 public class ECmonitor  extends DetectorMonitor {
 
-    private final int[] npaddles = new int[]{36,36,72};
+    private final int[] npaddles = new int[]{72,36,36};
         
     
     public ECmonitor(String name) {
@@ -38,7 +38,7 @@ public class ECmonitor  extends DetectorMonitor {
         this.getDetectorCanvas().divide(3, 3);
         this.getDetectorCanvas().setGridX(false);
         this.getDetectorCanvas().setGridY(false);
-        String[] stacks = new String[]{"ECin","ECout","PCAL"};
+        String[] stacks = new String[]{"PCAL","ECin","ECout"};
         String[] views = new String[]{"u","v","w"};
         DataGroup sum = new DataGroup(3,1);
         for(int i=0; i<3; i++) {
@@ -60,6 +60,16 @@ public class ECmonitor  extends DetectorMonitor {
             dg.addDataSet(occ, 0);
             this.getDataGroup().add(dg,0,layer,0);
         }
+        
+        // plotting histos
+        for(int layer=1; layer <=9; layer++) {
+            this.getDetectorCanvas().cd((layer-1)+0);
+            this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,layer,0).getH2F("occ"));
+        }
+        this.getDetectorCanvas().update();
+        this.getDetectorView().getView().repaint();
+        this.getDetectorView().update();
+
     }
 
     public void drawDetector() {
@@ -81,41 +91,23 @@ public class ECmonitor  extends DetectorMonitor {
     @Override
     public void processEvent(DataEvent event) {
         // process event info and save into data group
-        if(event.hasBank("EC::dgtz")==true){
-	    EvioDataBank bank = (EvioDataBank) event.getBank("EC::dgtz");
+        if(event.hasBank("ECAL::adc")==true){
+	    DataBank bank = event.getBank("ECAL::adc");
 	    int rows = bank.rows();
 	    for(int loop = 0; loop < rows; loop++){
-                int sector = bank.getInt("sector", loop);
-                int stack  = bank.getInt("stack", loop);
-                int view   = bank.getInt("view", loop);
-                int strip  = bank.getInt("strip", loop);
+                int sector = bank.getByte("sector", loop);
+                int layer  = bank.getByte("layer", loop);
+                int comp   = bank.getShort("component", loop);
                 int adc    = bank.getInt("ADC", loop);
-                int tdc    = bank.getInt("TDC", loop);
-                int layer  = (stack-1)*3+view;
-    //            System.out.println(sector + " " + layer + " " + paddle + " " + adcl + " " + tdcl);
-                if(adc>0 && tdc>0) this.getDataGroup().getItem(0,layer,0).getH2F("occ").fill(strip*1.0,sector*1.0);
-                if(stack==1) this.getDetectorSummary().getH1F("sumECin").fill(sector*1.0);
-                else         this.getDetectorSummary().getH1F("sumECout").fill(sector*1.0);
+                float time = bank.getFloat("time",loop);
+//                System.out.println(sector + " " + layer + " " + comp + " " + adc + " " + time);
+                if(adc>0 && time>=0) this.getDataGroup().getItem(0,layer,0).getH2F("occ").fill(comp*1.0,sector*1.0);
+                if(layer==1)      this.getDetectorSummary().getH1F("sumPCAL").fill(sector*1.0);
+                else if(layer==2) this.getDetectorSummary().getH1F("sumECin").fill(sector*1.0);
+                else              this.getDetectorSummary().getH1F("sumECout").fill(sector*1.0);
 
 	    }
-    	}
-        if(event.hasBank("PCAL::dgtz")==true){
-	    EvioDataBank bank = (EvioDataBank) event.getBank("PCAL::dgtz");
-	    int rows = bank.rows();
-	    for(int loop = 0; loop < rows; loop++){
-                int sector = bank.getInt("sector", loop);
-                int stack  = bank.getInt("stack", loop);
-                int view   = bank.getInt("view", loop);
-                int strip  = bank.getInt("strip", loop);
-                int adc    = bank.getInt("ADC", loop);
-                int tdc    = bank.getInt("TDC", loop);
-                int layer  = (stack+1)*3+view;
-    //            System.out.println(sector + " " + layer + " " + paddle + " " + adcl + " " + tdcl);
-                if(adc>0 && tdc>0) this.getDataGroup().getItem(0,layer,0).getH2F("occ").fill(strip*1.0,sector*1.0);
-                this.getDetectorSummary().getH1F("sumPCAL").fill(sector*1.0);
-	    }
-    	}
-        
+    	}        
     }
 
     @Override
@@ -127,13 +119,6 @@ public class ECmonitor  extends DetectorMonitor {
     @Override
     public void timerUpdate() {
  //       System.out.println("Updating FTOF canvas");
-        for(int layer=1; layer <=9; layer++) {
-            this.getDetectorCanvas().cd((layer-1)+0);
-            this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,layer,0).getH2F("occ"));
-        }
-        this.getDetectorCanvas().update();
-        this.getDetectorView().getView().repaint();
-        this.getDetectorView().update();
     }
 
 

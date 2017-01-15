@@ -33,6 +33,7 @@ public class DetectorMonitor implements IDataEventListener {
         this.detectorName = name;
         this.detectorPanel  = new JPanel();
         this.detectorCanvas = new EmbeddedCanvas();
+        this.detectorCanvas.initTimer(500);
         this.detectorView   = new DetectorPane2D();
         this.numberOfEvents = 0;
     }

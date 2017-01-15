@@ -48,7 +48,19 @@ public class LTCCmonitor  extends DetectorMonitor {
         dg.addDataSet(adc, 2);
         dg.addDataSet(tdc, 3);
         this.getDataGroup().add(dg,0,0,0);
-
+        
+        // plotting histos
+        this.getDetectorCanvas().cd(0);
+        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("occADC"));
+        this.getDetectorCanvas().cd(1);
+        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("occTDC"));
+        this.getDetectorCanvas().cd(2);
+        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("adc"));
+        this.getDetectorCanvas().cd(3);
+        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("tdc"));
+        this.getDetectorCanvas().update();
+        this.getDetectorView().getView().repaint();
+        this.getDetectorView().update();
     }
 
     public void drawDetector() {
@@ -70,22 +82,7 @@ public class LTCCmonitor  extends DetectorMonitor {
     @Override
     public void processEvent(DataEvent event) {
         // process event info and save into data group
-//        if(event.hasBank("LTCC::dgtz")==true){
-//	    EvioDataBank bank = (EvioDataBank) event.getBank("LTCC::dgtz");
-//	    int rows = bank.rows();
-//	    for(int loop = 0; loop < rows; loop++){
-//                int sector  = bank.getInt("sector", loop);
-//                int ring    = bank.getInt("ring", loop);
-//                int half    = bank.getInt("half", loop);
-//                int nphe    = bank.getInt("nphe", loop);
-//                double time = bank.getDouble("time", loop);
-//                if(nphe>0) this.getDataGroup().getItem(0,0,0).getH2F("occADC").fill(((ring-1)*2+half)*1.0,sector*1.0);
-//                if(time>0) this.getDataGroup().getItem(0,0,0).getH2F("occTDC").fill(((ring-1)*2+half)*1.0,sector*1.0);
-//                if(nphe>0) this.getDataGroup().getItem(0,0,0).getH2F("adc").fill(nphe*1.0,((sector-1)*8+(ring-1)*2+half)*1.0);
-//                if(time>0) this.getDataGroup().getItem(0,0,0).getH2F("tdc").fill(time,((sector-1)*8+(ring-1)*2+half)*1.0);
-//	    }
-//    	}
-        
+
     }
 
     @Override
@@ -96,18 +93,7 @@ public class LTCCmonitor  extends DetectorMonitor {
 
     @Override
     public void timerUpdate() {
- //       System.out.println("Updating LTCC canvas");
-        this.getDetectorCanvas().cd(0);
-        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("occADC"));
-        this.getDetectorCanvas().cd(1);
-        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("occTDC"));
-        this.getDetectorCanvas().cd(2);
-        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("adc"));
-        this.getDetectorCanvas().cd(3);
-        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("tdc"));
-        this.getDetectorCanvas().update();
-        this.getDetectorView().getView().repaint();
-        this.getDetectorView().update();
+
     }
 
 

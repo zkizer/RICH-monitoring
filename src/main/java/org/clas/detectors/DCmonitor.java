@@ -13,8 +13,8 @@ import org.jlab.detector.view.DetectorShape2D;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
 import org.jlab.groot.group.DataGroup;
+import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.io.evio.EvioDataBank;
 import org.jlab.rec.dc.Constants;
 import org.jlab.rec.dc.GeometryLoader;
 
@@ -61,6 +61,11 @@ public class DCmonitor extends DetectorMonitor {
             dg.addDataSet(occ, 1);
             this.getDataGroup().add(dg, sector,0,0);
         }
+        for(int sector=1; sector <=6; sector++) {
+            this.getDetectorCanvas().cd(sector-1);
+            this.getDetectorCanvas().draw(this.getDataGroup().getItem(sector,0,0).getH2F("occ"));
+        }
+        this.getDetectorCanvas().update();
 
     }
 
@@ -116,18 +121,19 @@ public class DCmonitor extends DetectorMonitor {
     @Override
     public void processEvent(DataEvent event) {
         // process event info and save into data group
-        if(event.hasBank("DC::dgtz")==true){
-	    EvioDataBank bank = (EvioDataBank) event.getBank("DC::dgtz");
-	    int rows = bank.rows();
-	    for(int loop = 0; loop < rows; loop++){
-                int sector = bank.getInt("sector", loop);
-                int layer  = bank.getInt("layer", loop);
-                int wire   = bank.getInt("wire", loop);
+        if(event.hasBank("DC::tdc")==true){
+            DataBank  bank = event.getBank("DC::tdc");
+            int rows = bank.rows();
+            for(int i = 0; i < rows; i++){
+                int    sector = bank.getByte("sector",i);
+                int     layer = bank.getByte("layer",i);
+                int      wire = bank.getShort("component",i);
+                int       TDC = bank.getInt("TDC",i);
+                int     order = bank.getByte("order",i); 
                 this.getDataGroup().getItem(sector,0,0).getH2F("raw").fill(wire*1.0,layer*1.0);
                 this.getDetectorSummary().getH1F("summary").fill(sector*1.0);
-	    }
-    	}
-        
+            }
+       }       
     }
 
     @Override
@@ -138,16 +144,13 @@ public class DCmonitor extends DetectorMonitor {
 
     @Override
     public void timerUpdate() {
-///        System.out.println("Updating DC canvas");
+//        System.out.println("Updating DC");
         for(int sector=1; sector <=6; sector++) {
             H2F raw = this.getDataGroup().getItem(sector,0,0).getH2F("raw");
             for(int loop = 0; loop < raw.getDataBufferSize(); loop++){
                 this.getDataGroup().getItem(sector,0,0).getH2F("occ").setDataBufferBin(loop,100*raw.getDataBufferBin(loop)/this.getNumberOfEvents());
             }
-            this.getDetectorCanvas().cd(sector-1);
-            this.getDetectorCanvas().draw(this.getDataGroup().getItem(sector,0,0).getH2F("occ"));
-        }
-        this.getDetectorCanvas().update();
+       }
     }
 
  

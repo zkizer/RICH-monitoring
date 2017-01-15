@@ -1,14 +1,10 @@
 package org.clas.viewer;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.ImageObserver;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -24,7 +20,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.border.SoftBevelBorder;
 import javax.swing.event.ChangeEvent;
@@ -110,6 +105,7 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         CLAS12Canvas.divide(3,4);
         CLAS12Canvas.setGridX(false);
         CLAS12Canvas.setGridY(false);
+        CLAS12Canvas.initTimer(500);
         JPanel    CLAS12View = new JPanel(new BorderLayout());
         JSplitPane splitPanel = new JSplitPane();
         splitPanel.setLeftComponent(CLAS12View);
@@ -180,9 +176,11 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         //decodedEvent.show();
         		
 	if(event!=null ){
-           
+//            event.show();
+
             if (event.getType() == DataEventType.EVENT_START) {
                 resetEventListener();
+                this.plotSummaries();
             }
             for(int k=0; k<this.monitors.length; k++) {
                 this.monitors[k].dataEventAction(event);
@@ -190,11 +188,7 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
 	}
    }
 
-    
-    @Override
-    public void timerUpdate() {
-//        System.out.println("Time to update ...");
-        // plot summary graphs on main Canvas
+    public void plotSummaries() {
         this.CLAS12Canvas.cd(0);
         if(this.monitors[0].getDetectorSummary()!=null) this.CLAS12Canvas.draw(this.monitors[0].getDetectorSummary().getH1F("summary"));
         this.CLAS12Canvas.cd(1);
@@ -216,13 +210,17 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         this.CLAS12Canvas.cd(9);
         if(this.monitors[3].getDetectorSummary()!=null) this.CLAS12Canvas.draw(this.monitors[3].getDetectorSummary().getH1F("summary"));
         this.CLAS12Canvas.cd(10);
-        if(this.monitors[4].getDetectorSummary()!=null) this.CLAS12Canvas.draw(this.monitors[4].getDetectorSummary().getH1F("summary"));
-        this.CLAS12Canvas.update();
-        // plot graphs on detector tabs
-        for(int k=0; k<monitors.length; k++) {
+        if(this.monitors[4].getDetectorSummary()!=null) this.CLAS12Canvas.draw(this.monitors[4].getDetectorSummary().getH1F("summary"));       
+    }
+    
+    
+    @Override
+    public void timerUpdate() {
+//        System.out.println("Time to update ...");
+        for(int k=0; k<this.monitors.length; k++) {
             this.monitors[k].timerUpdate();
         }
-    }
+   }
 
     @Override
     public void resetEventListener() {

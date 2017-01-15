@@ -13,8 +13,9 @@ import org.jlab.detector.view.DetectorShape2D;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
 import org.jlab.groot.group.DataGroup;
+import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.io.evio.EvioDataBank;
+
 
 /**
  *
@@ -70,6 +71,15 @@ public class FTOFmonitor  extends DetectorMonitor {
             dg.addDataSet(occR, 1);
             this.getDataGroup().add(dg,0,layer,0);
         }
+        for(int layer=1; layer <=3; layer++) {
+            this.getDetectorCanvas().cd((layer-1)*2+0);
+            this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,layer,0).getH2F("occL"));
+            this.getDetectorCanvas().cd((layer-1)*2+1);
+            this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,layer,0).getH2F("occR"));
+        }
+        this.getDetectorCanvas().update();
+        this.getDetectorView().getView().repaint();
+        this.getDetectorView().update();
     }
 
     public void drawDetector() {
@@ -112,26 +122,26 @@ public class FTOFmonitor  extends DetectorMonitor {
     @Override
     public void processEvent(DataEvent event) {
         // process event info and save into data group
-        if(event.hasBank("FTOF::dgtz")==true){
-	    EvioDataBank bank = (EvioDataBank) event.getBank("FTOF::dgtz");
-	    int rows = bank.rows();
-	    for(int loop = 0; loop < rows; loop++){
-                int sector = bank.getInt("sector", loop);
-                int layer  = bank.getInt("layer", loop);
-                int paddle   = bank.getInt("paddle", loop);
-                int adcl     = bank.getInt("ADCL", loop);
-                int adcr     = bank.getInt("ADCR", loop);
-                int tdcl     = bank.getInt("TDCL", loop);
-                int tdcr     = bank.getInt("TDCR", loop);
-    //            System.out.println(sector + " " + layer + " " + paddle + " " + adcl + " " + tdcl);
-                if(adcl>0 && tdcl>0) this.getDataGroup().getItem(0,layer,0).getH2F("occL").fill(paddle*1.0,sector*1.0);
-                if(adcr>0 && tdcr>0) this.getDataGroup().getItem(0,layer,0).getH2F("occR").fill(paddle*1.0,sector*1.0);
+        if(event.hasBank("FTOF::adc")==true){
+            DataBank  bank = event.getBank("FTOF::adc");
+            int rows = bank.rows();
+            for(int i = 0; i < rows; i++){
+                int    sector = bank.getByte("sector",i);
+                int     layer = bank.getByte("layer",i);
+                int    paddle = bank.getShort("component",i);
+                int       ADC = bank.getInt("ADC",i);
+                float    time = bank.getFloat("time",i);
+                int     order = bank.getByte("order",i); // order specifies left-right for ADC
+//                           System.out.println("ROW " + i + " SECTOR = " + sector
+//                                 + " LAYER = " + layer + " PADDLE = "
+//                                 + paddle + " ADC = " + ADC);    
+                if(ADC>0 && order==0) this.getDataGroup().getItem(0,layer,0).getH2F("occL").fill(paddle*1.0,sector*1.0);
+                if(ADC>0 && order==1) this.getDataGroup().getItem(0,layer,0).getH2F("occR").fill(paddle*1.0,sector*1.0);
                 if(layer==1)      this.getDetectorSummary().getH1F("sumP1A").fill(sector*1.0);
                 else if (layer==2)this.getDetectorSummary().getH1F("sumP1B").fill(sector*1.0);
                 else              this.getDetectorSummary().getH1F("sumP2").fill(sector*1.0);
-	    }
-    	}
-        
+            }
+        }
     }
 
     @Override
@@ -142,16 +152,7 @@ public class FTOFmonitor  extends DetectorMonitor {
 
     @Override
     public void timerUpdate() {
- //       System.out.println("Updating FTOF canvas");
-        for(int layer=1; layer <=3; layer++) {
-            this.getDetectorCanvas().cd((layer-1)*2+0);
-            this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,layer,0).getH2F("occL"));
-            this.getDetectorCanvas().cd((layer-1)*2+1);
-            this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,layer,0).getH2F("occR"));
-        }
-        this.getDetectorCanvas().update();
-        this.getDetectorView().getView().repaint();
-        this.getDetectorView().update();
+
     }
 
 

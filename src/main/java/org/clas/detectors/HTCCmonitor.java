@@ -10,8 +10,8 @@ import org.clas.viewer.DetectorMonitor;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
 import org.jlab.groot.group.DataGroup;
+import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.io.evio.EvioDataBank;
 
 /**
  *
@@ -59,6 +59,20 @@ public class HTCCmonitor  extends DetectorMonitor {
         dg.addDataSet(adc, 2);
         dg.addDataSet(tdc, 3);
         this.getDataGroup().add(dg,0,0,0);
+        
+        // plotting histos
+        this.getDetectorCanvas().cd(0);
+        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("occADC"));
+        this.getDetectorCanvas().cd(1);
+        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("occTDC"));
+        this.getDetectorCanvas().cd(2);
+        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("adc"));
+        this.getDetectorCanvas().cd(3);
+        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("tdc"));
+        this.getDetectorCanvas().update();
+        this.getDetectorView().getView().repaint();
+        this.getDetectorView().update();
+
     }
 
     public void drawDetector() {
@@ -80,11 +94,11 @@ public class HTCCmonitor  extends DetectorMonitor {
     @Override
     public void processEvent(DataEvent event) {
         // process event info and save into data group
-        if(event.hasBank("HTCC::dgtz")==true){
-	    EvioDataBank bank = (EvioDataBank) event.getBank("HTCC::dgtz");
+        if(event.hasBank("HTCC::adc")==true){
+	    DataBank bank = event.getBank("HTCC::adc");
 	    int rows = bank.rows();
 	    for(int loop = 0; loop < rows; loop++){
-                int sector  = bank.getInt("sector", loop);
+                int sector  = bank.getByte("sector", loop);
                 int ring    = bank.getInt("ring", loop);
                 int half    = bank.getInt("half", loop);
                 int nphe    = bank.getInt("nphe", loop);
@@ -107,18 +121,7 @@ public class HTCCmonitor  extends DetectorMonitor {
 
     @Override
     public void timerUpdate() {
- //       System.out.println("Updating HTCC canvas");
-        this.getDetectorCanvas().cd(0);
-        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("occADC"));
-        this.getDetectorCanvas().cd(1);
-        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("occTDC"));
-        this.getDetectorCanvas().cd(2);
-        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("adc"));
-        this.getDetectorCanvas().cd(3);
-        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("tdc"));
-        this.getDetectorCanvas().update();
-        this.getDetectorView().getView().repaint();
-        this.getDetectorView().update();
+
     }
 
 
