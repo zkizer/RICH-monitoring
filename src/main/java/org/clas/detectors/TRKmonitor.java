@@ -239,7 +239,7 @@ public class TRKmonitor extends DetectorMonitor {
         // Processing TBT
 //        enTB.processDataEvent(eventd);
         
-        if(event.hasBank("HitBasedTrkg::HBTracks")==true){
+/*        if(event.hasBank("HitBasedTrkg::HBTracks")==true){
 	    EvioDataBank bank = (EvioDataBank) event.getBank("HitBasedTrkg::HBTracks");
 	    int rows = bank.rows();
 	    for(int loop = 0; loop < rows; loop++){
@@ -312,7 +312,7 @@ public class TRKmonitor extends DetectorMonitor {
 	    }
             for(int sector=1; sector<=6; sector++) if(nCrosses[sector-1]>0) this.getDataGroup().getItem(0,0,0).getH2F("numberOfCrossesTBT").fill(nCrosses[sector-1],sector);
 	}    
-        
+    */    
     }
 
     @Override

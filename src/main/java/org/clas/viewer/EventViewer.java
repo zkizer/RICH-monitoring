@@ -3,17 +3,13 @@ package org.clas.viewer;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.Image;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -21,7 +17,6 @@ import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextPane;
-import javax.swing.border.SoftBevelBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.SimpleAttributeSet;
@@ -59,6 +54,7 @@ public class EventViewer implements IDataEventListener, DetectorListener, Change
     
     TreeMap<String, List<H2F>>  histos = new TreeMap<String,List<H2F>>();
     
+    private int updateTime = 2000;
     
    // detector monitors
     DetectorMonitor[] monitors = {
@@ -78,7 +74,7 @@ public class EventViewer implements IDataEventListener, DetectorListener, Change
       	tabbedpane 	= new JTabbedPane();
 
         processorPane = new DataSourceProcessorPane();
-        processorPane.setUpdateRate(10);
+        processorPane.setUpdateRate(100);
 
         mainPanel.add(tabbedpane);
         mainPanel.add(processorPane,BorderLayout.PAGE_END);
@@ -88,7 +84,6 @@ public class EventViewer implements IDataEventListener, DetectorListener, Change
         CLAS12Canvas.divide(3,4);
         CLAS12Canvas.setGridX(false);
         CLAS12Canvas.setGridY(false);
-        CLAS12Canvas.initTimer(500);
         JPanel    CLAS12View = new JPanel(new BorderLayout());
         JSplitPane splitPanel = new JSplitPane();
         splitPanel.setLeftComponent(CLAS12View);
@@ -118,6 +113,7 @@ public class EventViewer implements IDataEventListener, DetectorListener, Change
         }
         this.processorPane.addEventListener(this);
         
+        this.setCanvasUpdate(updateTime);
     }
       
     public JPanel  getPanel(){
@@ -187,7 +183,13 @@ public class EventViewer implements IDataEventListener, DetectorListener, Change
         if(this.monitors[4].getDetectorSummary()!=null) this.CLAS12Canvas.draw(this.monitors[4].getDetectorSummary().getH1F("summary"));       
     }
     
-    
+    public void setCanvasUpdate(int time) {
+        this.CLAS12Canvas.initTimer(time);
+        for(int k=0; k<this.monitors.length; k++) {
+            this.monitors[k].setCanvasUpdate(updateTime);
+        }
+    }
+
     @Override
     public void timerUpdate() {
 //        System.out.println("Time to update ...");
