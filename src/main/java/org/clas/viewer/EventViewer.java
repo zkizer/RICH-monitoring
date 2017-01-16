@@ -45,13 +45,11 @@ import org.jlab.io.task.IDataEventListener;
  *
  * @author ziegler
  */
-public class EventViewer implements IDataEventListener, DetectorListener, ActionListener, ChangeListener {
+public class EventViewer implements IDataEventListener, DetectorListener, ChangeListener {
     
     List<DetectorPane2D> DetectorPanels 	= new ArrayList<DetectorPane2D>();
     JTabbedPane tabbedpane           		= null;
     JPanel mainPanel 				= null;
-    JPanel mainBar 				= null;
-    JPanel buttonPanel 				= null;
     DataSourceProcessorPane processorPane 	= null;
     EmbeddedCanvas CLAS12Canvas                 = null;
     
@@ -77,28 +75,13 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
 	mainPanel = new JPanel();	
 	mainPanel.setLayout(new BorderLayout());
         
-        mainBar   = new JPanel();	
-	mainBar.setLayout(new BorderLayout());
-	mainBar.setBorder(BorderFactory.createSoftBevelBorder(SoftBevelBorder.RAISED));
-        
-        buttonPanel = new JPanel();
-        buttonPanel.setLayout(new BorderLayout());
-	buttonPanel.setBorder(BorderFactory.createSoftBevelBorder(SoftBevelBorder.LOWERED));
-        
       	tabbedpane 	= new JTabbedPane();
 
         processorPane = new DataSourceProcessorPane();
-        processorPane.setUpdateRate(100);
-
-        JButton resetButton = new JButton("Reset");
-        resetButton.setActionCommand("ResetHistos");
-        resetButton.addActionListener(this);
-        buttonPanel.add(resetButton);
-        mainBar.add(processorPane);
-        mainBar.add(buttonPanel,BorderLayout.LINE_END);
+        processorPane.setUpdateRate(10);
 
         mainPanel.add(tabbedpane);
-        mainPanel.add(mainBar,BorderLayout.PAGE_END);
+        mainPanel.add(processorPane,BorderLayout.PAGE_END);
         
     
         CLAS12Canvas    = new EmbeddedCanvas();
@@ -137,15 +120,6 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         
     }
       
-    public void actionPerformed(ActionEvent e) {
-        if(e.getActionCommand().compareTo("ResetHistos")==0){
-            for(int k=0; k<this.monitors.length; k++) {
-                this.monitors[k].resetEventListener();
-                this.monitors[k].timerUpdate();
-            }      
-        }
-    }
-    
     public JPanel  getPanel(){
         return mainPanel;
     }
@@ -224,6 +198,11 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
 
     @Override
     public void resetEventListener() {
+        for(int k=0; k<this.monitors.length; k++) {
+            this.monitors[k].resetEventListener();
+            this.monitors[k].timerUpdate();
+        }      
+        this.plotSummaries();
     }
     
     public void stateChanged(ChangeEvent e) {
