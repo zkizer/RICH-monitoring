@@ -36,9 +36,9 @@ public class FTOFmonitor  extends DetectorMonitor {
     public void createHistos() {
         // initialize canvas and create histograms
         this.setNumberOfEvents(0);
-        this.getDetectorCanvas().divide(2, 3);
-        this.getDetectorCanvas().setGridX(false);
-        this.getDetectorCanvas().setGridY(false);
+        this.getDetectorCanvas().getCanvas("canvas1").divide(2, 3);
+        this.getDetectorCanvas().getCanvas("canvas1").setGridX(false);
+        this.getDetectorCanvas().getCanvas("canvas1").setGridY(false);
         H1F sumP1A = new H1F("sumP1A","sumP1A",6,1,7);
         sumP1A.setTitleX("sector");
         sumP1A.setTitleY("FTOF P1A hits");
@@ -72,12 +72,12 @@ public class FTOFmonitor  extends DetectorMonitor {
             this.getDataGroup().add(dg,0,layer,0);
         }
         for(int layer=1; layer <=3; layer++) {
-            this.getDetectorCanvas().cd((layer-1)*2+0);
-            this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,layer,0).getH2F("occL"));
-            this.getDetectorCanvas().cd((layer-1)*2+1);
-            this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,layer,0).getH2F("occR"));
+            this.getDetectorCanvas().getCanvas("canvas1").cd((layer-1)*2+0);
+            this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occL"));
+            this.getDetectorCanvas().getCanvas("canvas1").cd((layer-1)*2+1);
+            this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occR"));
         }
-        this.getDetectorCanvas().update();
+        this.getDetectorCanvas().getCanvas("canvas1").update();
         this.getDetectorView().getView().repaint();
         this.getDetectorView().update();
     }

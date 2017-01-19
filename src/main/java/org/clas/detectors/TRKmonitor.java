@@ -53,9 +53,9 @@ public class TRKmonitor extends DetectorMonitor {
     public void createHistos() {
         // initialize canvas and create histograms
         this.setNumberOfEvents(0);
-        this.getDetectorCanvas().divide(2, 4);
-        this.getDetectorCanvas().setGridX(false);
-        this.getDetectorCanvas().setGridY(false);
+        this.getDetectorCanvas().getCanvas("canvas1").divide(2, 4);
+        this.getDetectorCanvas().getCanvas("canvas1").setGridX(false);
+        this.getDetectorCanvas().getCanvas("canvas1").setGridY(false);
         
         H1F sumHBT = new H1F("sumHBT","sumHBT",6,1,7);
         sumHBT.setTitleX("sector");
@@ -107,23 +107,23 @@ public class TRKmonitor extends DetectorMonitor {
         this.getDataGroup().add(dg, 0,0,0);
         
         // plot histos
-        this.getDetectorCanvas().cd(0);
-        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("clusterSizeHBT"));
-        this.getDetectorCanvas().cd(2);
-        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfHitsHBT"));
-        this.getDetectorCanvas().cd(4);
-        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfClustersHBT"));
-        this.getDetectorCanvas().cd(6);
-        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfCrossesHBT"));
-        this.getDetectorCanvas().cd(1);
-        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("clusterSizeTBT"));
-        this.getDetectorCanvas().cd(3);
-        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfHitsTBT"));
-        this.getDetectorCanvas().cd(5);
-        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfClustersTBT"));
-        this.getDetectorCanvas().cd(7);
-        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfCrossesTBT"));
-        this.getDetectorCanvas().update();
+        this.getDetectorCanvas().getCanvas("canvas1").cd(0);
+        this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,0,0).getH2F("clusterSizeHBT"));
+        this.getDetectorCanvas().getCanvas("canvas1").cd(2);
+        this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfHitsHBT"));
+        this.getDetectorCanvas().getCanvas("canvas1").cd(4);
+        this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfClustersHBT"));
+        this.getDetectorCanvas().getCanvas("canvas1").cd(6);
+        this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfCrossesHBT"));
+        this.getDetectorCanvas().getCanvas("canvas1").cd(1);
+        this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,0,0).getH2F("clusterSizeTBT"));
+        this.getDetectorCanvas().getCanvas("canvas1").cd(3);
+        this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfHitsTBT"));
+        this.getDetectorCanvas().getCanvas("canvas1").cd(5);
+        this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfClustersTBT"));
+        this.getDetectorCanvas().getCanvas("canvas1").cd(7);
+        this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfCrossesTBT"));
+        this.getDetectorCanvas().getCanvas("canvas1").update();
 
     }
 

@@ -28,9 +28,9 @@ public class LTCCmonitor  extends DetectorMonitor {
     public void createHistos() {
         // initialize canvas and create histograms
         this.setNumberOfEvents(0);
-        this.getDetectorCanvas().divide(2, 2);
-        this.getDetectorCanvas().setGridX(false);
-        this.getDetectorCanvas().setGridY(false);
+        this.getDetectorCanvas().getCanvas("canvas1").divide(2, 2);
+        this.getDetectorCanvas().getCanvas("canvas1").setGridX(false);
+        this.getDetectorCanvas().getCanvas("canvas1").setGridY(false);
         H1F summary = new H1F("summary","summary",6,1,7);
         summary.setTitleX("sector");
         summary.setTitleY("LTCC hits");
@@ -50,15 +50,15 @@ public class LTCCmonitor  extends DetectorMonitor {
         this.getDataGroup().add(dg,0,0,0);
         
         // plotting histos
-        this.getDetectorCanvas().cd(0);
-        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("occADC"));
-        this.getDetectorCanvas().cd(1);
-        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("occTDC"));
-        this.getDetectorCanvas().cd(2);
-        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("adc"));
-        this.getDetectorCanvas().cd(3);
-        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("tdc"));
-        this.getDetectorCanvas().update();
+        this.getDetectorCanvas().getCanvas("canvas1").cd(0);
+        this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,0,0).getH2F("occADC"));
+        this.getDetectorCanvas().getCanvas("canvas1").cd(1);
+        this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,0,0).getH2F("occTDC"));
+        this.getDetectorCanvas().getCanvas("canvas1").cd(2);
+        this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,0,0).getH2F("adc"));
+        this.getDetectorCanvas().getCanvas("canvas1").cd(3);
+        this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,0,0).getH2F("tdc"));
+        this.getDetectorCanvas().getCanvas("canvas1").update();
         this.getDetectorView().getView().repaint();
         this.getDetectorView().update();
     }

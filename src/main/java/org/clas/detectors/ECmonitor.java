@@ -35,9 +35,9 @@ public class ECmonitor  extends DetectorMonitor {
     public void createHistos() {
         // initialize canvas and create histograms
         this.setNumberOfEvents(0);
-        this.getDetectorCanvas().divide(3, 3);
-        this.getDetectorCanvas().setGridX(false);
-        this.getDetectorCanvas().setGridY(false);
+        this.getDetectorCanvas().getCanvas("canvas1").divide(3, 3);
+        this.getDetectorCanvas().getCanvas("canvas1").setGridX(false);
+        this.getDetectorCanvas().getCanvas("canvas1").setGridY(false);
         String[] stacks = new String[]{"PCAL","ECin","ECout"};
         String[] views = new String[]{"u","v","w"};
         DataGroup sum = new DataGroup(3,1);
@@ -63,10 +63,10 @@ public class ECmonitor  extends DetectorMonitor {
         
         // plotting histos
         for(int layer=1; layer <=9; layer++) {
-            this.getDetectorCanvas().cd((layer-1)+0);
-            this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,layer,0).getH2F("occ"));
+            this.getDetectorCanvas().getCanvas("canvas1").cd((layer-1)+0);
+            this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occ"));
         }
-        this.getDetectorCanvas().update();
+        this.getDetectorCanvas().getCanvas("canvas1").update();
         this.getDetectorView().getView().repaint();
         this.getDetectorView().update();
 

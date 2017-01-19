@@ -8,7 +8,7 @@ package org.clas.viewer;
 import java.util.ArrayList;
 import javax.swing.JPanel;
 import org.jlab.detector.view.DetectorPane2D;
-import org.jlab.groot.graphics.EmbeddedCanvas;
+import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 import org.jlab.groot.group.DataGroup;
 import org.jlab.io.base.DataEvent;
 import org.jlab.io.base.DataEventType;
@@ -25,14 +25,14 @@ public class DetectorMonitor implements IDataEventListener {
     private IndexedList<DataGroup> detectorData    = new IndexedList<DataGroup>(3);
     private DataGroup              detectorSummary = null;
     private JPanel                 detectorPanel   = null;
-    private EmbeddedCanvas         detectorCanvas  = null;
+    private EmbeddedCanvasTabbed         detectorCanvas  = null;
     private DetectorPane2D         detectorView    = null;
     private int                    numberOfEvents;
 
     public DetectorMonitor(String name){
         this.detectorName = name;
         this.detectorPanel  = new JPanel();
-        this.detectorCanvas = new EmbeddedCanvas();
+        this.detectorCanvas = new EmbeddedCanvasTabbed();
         this.detectorView   = new DetectorPane2D();
         this.numberOfEvents = 0;
     }
@@ -63,7 +63,7 @@ public class DetectorMonitor implements IDataEventListener {
 	}
     }
 
-    public EmbeddedCanvas getDetectorCanvas() {
+    public EmbeddedCanvasTabbed getDetectorCanvas() {
         return detectorCanvas;
     }
     
@@ -109,7 +109,7 @@ public class DetectorMonitor implements IDataEventListener {
     }
     
     public void setCanvasUpdate(int time) {
-        this.detectorCanvas.initTimer(time);
+        this.detectorCanvas.getCanvas("canvas1").initTimer(time);
     }
     
     public void setDetectorSummary(DataGroup group) {
