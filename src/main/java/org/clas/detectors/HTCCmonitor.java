@@ -104,8 +104,8 @@ public class HTCCmonitor  extends DetectorMonitor {
                 int order   = bank.getByte("order", loop);
                 int adc     = bank.getInt("ADC", loop);
                 float time  = bank.getFloat("time", loop);
-                System.out.println("ROW " + loop + " SECTOR = " + sector + " LAYER = " + layer + " COMPONENT = " + comp + " ORDER + " + order +
-                      " ADC = " + adc + " TIME = " + time); 
+//                System.out.println("ROW " + loop + " SECTOR = " + sector + " LAYER = " + layer + " COMPONENT = " + comp + " ORDER + " + order +
+//                      " ADC = " + adc + " TIME = " + time); 
                 if(adc>0) this.getDataGroup().getItem(0,0,0).getH2F("occADC").fill(((layer-1)*2+comp)*1.0,sector*1.0);
                 if(time>0) this.getDataGroup().getItem(0,0,0).getH2F("occTDC").fill(((layer-1)*2+comp)*1.0,sector*1.0);
                 if(adc>0) this.getDataGroup().getItem(0,0,0).getH2F("adc").fill(adc*1.0,((sector-1)*8+(layer-1)*2+comp)*1.0);
