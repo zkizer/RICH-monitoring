@@ -44,7 +44,7 @@ import org.jlab.detector.view.DetectorPane2D;
 import org.jlab.detector.view.DetectorShape2D;
 import org.jlab.groot.data.H2F;
 import org.jlab.groot.data.TDirectory;
-import org.jlab.groot.graphics.EmbeddedCanvas;
+import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 import org.jlab.io.base.DataEvent;
 import org.jlab.io.base.DataEventType;
 import org.jlab.io.task.DataSourceProcessorPane;
@@ -61,7 +61,7 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
     JPanel mainPanel 				= null;
     JMenuBar menuBar                            = null;
     DataSourceProcessorPane processorPane 	= null;
-    EmbeddedCanvas CLAS12Canvas                 = null;
+    EmbeddedCanvasTabbed CLAS12Canvas                 = null;
 
     
     CodaEventDecoder               decoder = new CodaEventDecoder();
@@ -120,10 +120,10 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         mainPanel.add(processorPane,BorderLayout.PAGE_END);
         
     
-        CLAS12Canvas    = new EmbeddedCanvas();
-        CLAS12Canvas.divide(3,4);
-        CLAS12Canvas.setGridX(false);
-        CLAS12Canvas.setGridY(false);
+        CLAS12Canvas    = new EmbeddedCanvasTabbed();
+        CLAS12Canvas.getCanvas("canvas1").divide(3,4);
+        CLAS12Canvas.getCanvas("canvas1").setGridX(false);
+        CLAS12Canvas.getCanvas("canvas1").setGridY(false);
         JPanel    CLAS12View = new JPanel(new BorderLayout());
         JSplitPane splitPanel = new JSplitPane();
         splitPanel.setLeftComponent(CLAS12View);
@@ -233,35 +233,35 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
    }
 
     public void plotSummaries() {
-        this.CLAS12Canvas.cd(0);
-        if(this.monitors[0].getDetectorSummary()!=null) this.CLAS12Canvas.draw(this.monitors[0].getDetectorSummary().getH1F("summary"));
-        this.CLAS12Canvas.cd(1);
-        if(this.monitors[1].getDetectorSummary()!=null) this.CLAS12Canvas.draw(this.monitors[1].getDetectorSummary().getH1F("sumHBT"));
-        this.CLAS12Canvas.cd(2);
-        if(this.monitors[1].getDetectorSummary()!=null) this.CLAS12Canvas.draw(this.monitors[1].getDetectorSummary().getH1F("sumTBT"));
-        this.CLAS12Canvas.cd(3);
-        if(this.monitors[2].getDetectorSummary()!=null) this.CLAS12Canvas.draw(this.monitors[2].getDetectorSummary().getH1F("sumP1A"));
-        this.CLAS12Canvas.cd(4);
-        if(this.monitors[2].getDetectorSummary()!=null) this.CLAS12Canvas.draw(this.monitors[2].getDetectorSummary().getH1F("sumP1B"));
-        this.CLAS12Canvas.cd(5);
-        if(this.monitors[2].getDetectorSummary()!=null) this.CLAS12Canvas.draw(this.monitors[2].getDetectorSummary().getH1F("sumP2"));
-        this.CLAS12Canvas.cd(6);
-        if(this.monitors[5].getDetectorSummary()!=null) this.CLAS12Canvas.draw(this.monitors[5].getDetectorSummary().getH1F("sumECin"));
-        this.CLAS12Canvas.cd(7);
-        if(this.monitors[5].getDetectorSummary()!=null) this.CLAS12Canvas.draw(this.monitors[5].getDetectorSummary().getH1F("sumECout"));
-        this.CLAS12Canvas.cd(8);
-        if(this.monitors[5].getDetectorSummary()!=null) this.CLAS12Canvas.draw(this.monitors[5].getDetectorSummary().getH1F("sumPCAL"));
-        this.CLAS12Canvas.cd(9);
-        if(this.monitors[3].getDetectorSummary()!=null) this.CLAS12Canvas.draw(this.monitors[3].getDetectorSummary().getH1F("summary"));
-        this.CLAS12Canvas.cd(10);
-        if(this.monitors[4].getDetectorSummary()!=null) this.CLAS12Canvas.draw(this.monitors[4].getDetectorSummary().getH1F("summary"));       
+        this.CLAS12Canvas.getCanvas("canvas1").cd(0);
+        if(this.monitors[0].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("canvas1").draw(this.monitors[0].getDetectorSummary().getH1F("summary"));
+        this.CLAS12Canvas.getCanvas("canvas1").cd(1);
+        if(this.monitors[1].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("canvas1").draw(this.monitors[1].getDetectorSummary().getH1F("sumHBT"));
+        this.CLAS12Canvas.getCanvas("canvas1").cd(2);
+        if(this.monitors[1].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("canvas1").draw(this.monitors[1].getDetectorSummary().getH1F("sumTBT"));
+        this.CLAS12Canvas.getCanvas("canvas1").cd(3);
+        if(this.monitors[2].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("canvas1").draw(this.monitors[2].getDetectorSummary().getH1F("sumP1A"));
+        this.CLAS12Canvas.getCanvas("canvas1").cd(4);
+        if(this.monitors[2].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("canvas1").draw(this.monitors[2].getDetectorSummary().getH1F("sumP1B"));
+        this.CLAS12Canvas.getCanvas("canvas1").cd(5);
+        if(this.monitors[2].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("canvas1").draw(this.monitors[2].getDetectorSummary().getH1F("sumP2"));
+        this.CLAS12Canvas.getCanvas("canvas1").cd(6);
+        if(this.monitors[5].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("canvas1").draw(this.monitors[5].getDetectorSummary().getH1F("sumECin"));
+        this.CLAS12Canvas.getCanvas("canvas1").cd(7);
+        if(this.monitors[5].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("canvas1").draw(this.monitors[5].getDetectorSummary().getH1F("sumECout"));
+        this.CLAS12Canvas.getCanvas("canvas1").cd(8);
+        if(this.monitors[5].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("canvas1").draw(this.monitors[5].getDetectorSummary().getH1F("sumPCAL"));
+        this.CLAS12Canvas.getCanvas("canvas1").cd(9);
+        if(this.monitors[3].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("canvas1").draw(this.monitors[3].getDetectorSummary().getH1F("summary"));
+        this.CLAS12Canvas.getCanvas("canvas1").cd(10);
+        if(this.monitors[4].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("canvas1").draw(this.monitors[4].getDetectorSummary().getH1F("summary"));       
     }
     
     public void setCanvasUpdate(int time) {
         System.out.println("Setting " + time + " ms update interval");
         this.updateTime = time;
-        this.CLAS12Canvas.initTimer(time);
-        this.CLAS12Canvas.update();
+        this.CLAS12Canvas.getCanvas("canvas1").initTimer(time);
+        this.CLAS12Canvas.getCanvas("canvas1").update();
         for(int k=0; k<this.monitors.length; k++) {
             this.monitors[k].setCanvasUpdate(time);
         }

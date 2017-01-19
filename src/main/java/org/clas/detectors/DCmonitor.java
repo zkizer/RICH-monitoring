@@ -28,6 +28,7 @@ public class DCmonitor extends DetectorMonitor {
     public DCmonitor(String name) {
         super(name);
         
+        this.getDetectorCanvas().addCanvas("canvas2");
         this.init();
     }
 
@@ -36,9 +37,12 @@ public class DCmonitor extends DetectorMonitor {
     public void createHistos() {
         // initialize canvas and create histograms
         this.setNumberOfEvents(0);
-        this.getDetectorCanvas().divide(2, 3);
-        this.getDetectorCanvas().setGridX(false);
-        this.getDetectorCanvas().setGridY(false);
+        this.getDetectorCanvas().getCanvas("canvas1").divide(2, 3);
+        this.getDetectorCanvas().getCanvas("canvas1").setGridX(false);
+        this.getDetectorCanvas().getCanvas("canvas1").setGridY(false);
+        this.getDetectorCanvas().getCanvas("canvas2").divide(2, 3);
+        this.getDetectorCanvas().getCanvas("canvas2").setGridX(false);
+        this.getDetectorCanvas().getCanvas("canvas2").setGridY(false);
         H1F summary = new H1F("summary","summary",6,1,7);
         summary.setTitleX("sector");
         summary.setTitleY("DC hits");
@@ -62,10 +66,13 @@ public class DCmonitor extends DetectorMonitor {
             this.getDataGroup().add(dg, sector,0,0);
         }
         for(int sector=1; sector <=6; sector++) {
-            this.getDetectorCanvas().cd(sector-1);
-            this.getDetectorCanvas().draw(this.getDataGroup().getItem(sector,0,0).getH2F("occ"));
+            this.getDetectorCanvas().getCanvas("canvas1").cd(sector-1);
+            this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(sector,0,0).getH2F("occ"));
+            this.getDetectorCanvas().getCanvas("canvas2").cd(sector-1);
+            this.getDetectorCanvas().getCanvas("canvas2").draw(this.getDataGroup().getItem(sector,0,0).getH2F("raw"));
         }
-        this.getDetectorCanvas().update();
+        this.getDetectorCanvas().getCanvas("canvas1").update();
+        this.getDetectorCanvas().getCanvas("canvas2").update();
 
     }
 
@@ -153,6 +160,11 @@ public class DCmonitor extends DetectorMonitor {
        }
     }
 
+    @Override
+    public void setCanvasUpdate(int time) {
+        this.getDetectorCanvas().getCanvas("canvas1").initTimer(time);
+        this.getDetectorCanvas().getCanvas("canvas2").initTimer(time);
+    }
  
 
 }
