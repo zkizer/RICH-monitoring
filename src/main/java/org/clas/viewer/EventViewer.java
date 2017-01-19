@@ -3,20 +3,33 @@ package org.clas.viewer;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 import javax.imageio.ImageIO;
+import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFileChooser;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.SimpleAttributeSet;
@@ -30,6 +43,7 @@ import org.jlab.detector.view.DetectorListener;
 import org.jlab.detector.view.DetectorPane2D;
 import org.jlab.detector.view.DetectorShape2D;
 import org.jlab.groot.data.H2F;
+import org.jlab.groot.data.TDirectory;
 import org.jlab.groot.graphics.EmbeddedCanvas;
 import org.jlab.io.base.DataEvent;
 import org.jlab.io.base.DataEventType;
@@ -40,13 +54,15 @@ import org.jlab.io.task.IDataEventListener;
  *
  * @author ziegler
  */
-public class EventViewer implements IDataEventListener, DetectorListener, ChangeListener {
+public class EventViewer implements IDataEventListener, DetectorListener, ActionListener, ChangeListener {
     
     List<DetectorPane2D> DetectorPanels 	= new ArrayList<DetectorPane2D>();
     JTabbedPane tabbedpane           		= null;
     JPanel mainPanel 				= null;
+    JMenuBar menuBar                            = null;
     DataSourceProcessorPane processorPane 	= null;
     EmbeddedCanvas CLAS12Canvas                 = null;
+
     
     CodaEventDecoder               decoder = new CodaEventDecoder();
     DetectorEventDecoder   detectorDecoder = new DetectorEventDecoder();
@@ -68,7 +84,31 @@ public class EventViewer implements IDataEventListener, DetectorListener, Change
         
     public EventViewer() {    	
         		
-	mainPanel = new JPanel();	
+	// create menu bar
+        menuBar = new JMenuBar();
+        JMenu settings = new JMenu("Settings");
+        JMenuItem menuItem;
+        settings.setMnemonic(KeyEvent.VK_A);
+        settings.getAccessibleContext().setAccessibleDescription("Choose monitoring parameters");
+        menuItem = new JMenuItem("Set GUI update interval...", KeyEvent.VK_T);
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_1, ActionEvent.ALT_MASK));
+        menuItem.getAccessibleContext().setAccessibleDescription("Set GUI update interval");
+        menuItem.addActionListener(this);
+        settings.add(menuItem);
+        menuBar.add(settings);
+        JMenu save = new JMenu("Save");
+        save.setMnemonic(KeyEvent.VK_A);
+        save.getAccessibleContext().setAccessibleDescription("Choose monitoring parameters");
+        menuItem = new JMenuItem("Save histograms to file", KeyEvent.VK_T);
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK));
+        menuItem.getAccessibleContext().setAccessibleDescription("Save histograms to file");
+        menuItem.addActionListener(this);
+        save.add(menuItem);
+        menuBar.add(save);
+        
+           
+        // create main panel
+        mainPanel = new JPanel();	
 	mainPanel.setLayout(new BorderLayout());
         
       	tabbedpane 	= new JTabbedPane();
@@ -116,10 +156,44 @@ public class EventViewer implements IDataEventListener, DetectorListener, Change
         this.setCanvasUpdate(updateTime);
     }
       
+    public void actionPerformed(ActionEvent e) {
+        System.out.println(e.getActionCommand());
+        if(e.getActionCommand()=="Set GUI update interval...") {
+            this.chooseUpdateInterval();
+        }
+        if(e.getActionCommand()=="Save histograms to file") {
+            this.saveToFile();
+        }
+    }
+
+    public void chooseUpdateInterval() {
+        String s = (String)JOptionPane.showInputDialog(
+                    null,
+                    "GUI update interval (ms)",
+                    " ",
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    null,
+                    "1000");
+        if(s!=null){
+            int time = 1000;
+            try { 
+                time= Integer.parseInt(s);
+            } catch(NumberFormatException e) { 
+                JOptionPane.showMessageDialog(null, "Value must be a positive integer!");
+            }
+            if(time>0) {
+                this.setCanvasUpdate(time);
+            }
+            else {
+                JOptionPane.showMessageDialog(null, "Value must be a positive integer!");
+            }
+        }
+    }
+        
     public JPanel  getPanel(){
         return mainPanel;
     }
-
 
     private JLabel getImage(String path,double scale) {
         JLabel label = null;
@@ -184,9 +258,12 @@ public class EventViewer implements IDataEventListener, DetectorListener, Change
     }
     
     public void setCanvasUpdate(int time) {
+        System.out.println("Setting " + time + " ms update interval");
+        this.updateTime = time;
         this.CLAS12Canvas.initTimer(time);
+        this.CLAS12Canvas.update();
         for(int k=0; k<this.monitors.length; k++) {
-            this.monitors[k].setCanvasUpdate(updateTime);
+            this.monitors[k].setCanvasUpdate(time);
         }
     }
 
@@ -207,6 +284,20 @@ public class EventViewer implements IDataEventListener, DetectorListener, Change
         this.plotSummaries();
     }
     
+    public void saveToFile() {
+        // TXT table summary FILE //
+        String fileName = "histo.hipo";
+        JFileChooser fc = new JFileChooser();
+        fc.setCurrentDirectory(new File(fileName));
+	int returnValue = fc.showSaveDialog(null);
+        if (returnValue == JFileChooser.APPROVE_OPTION) {
+            fileName = fc.getSelectedFile().getAbsolutePath();            
+        }
+        TDirectory dir = new TDirectory();
+        
+        System.out.println("Saving histograms to file " + fileName);
+    }
+    
     public void stateChanged(ChangeEvent e) {
         this.timerUpdate();
     }
@@ -222,6 +313,7 @@ public class EventViewer implements IDataEventListener, DetectorListener, Change
         EventViewer viewer = new EventViewer();
         //frame.add(viewer.getPanel());
         frame.add(viewer.mainPanel);
+        frame.setJMenuBar(viewer.menuBar);
         frame.setSize(900, 600);
         frame.setVisible(true);
     }

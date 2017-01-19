@@ -46,7 +46,7 @@ public class HTCCmonitor  extends DetectorMonitor {
         H2F occTDC = new H2F("occTDC", "occTDC", 8, 1, 9, 6, 1, 7);
         occTDC.setTitleX("ring");
         occTDC.setTitleY("sector");
-        H2F adc = new H2F("adc", "adc", 50, 0, 50, 48, 1, 49);
+        H2F adc = new H2F("adc", "adc", 100, 0, 5000, 48, 1, 49);
         adc.setTitleX("adc");
         adc.setTitleY("pmt");
         H2F tdc = new H2F("tdc", "tdc", 100, 0, 250, 48, 1, 49);
@@ -99,14 +99,17 @@ public class HTCCmonitor  extends DetectorMonitor {
 	    int rows = bank.rows();
 	    for(int loop = 0; loop < rows; loop++){
                 int sector  = bank.getByte("sector", loop);
-                int ring    = bank.getInt("ring", loop);
-                int half    = bank.getInt("half", loop);
-                int nphe    = bank.getInt("nphe", loop);
-                double time = bank.getDouble("time", loop);
-                if(nphe>0) this.getDataGroup().getItem(0,0,0).getH2F("occADC").fill(((ring-1)*2+half)*1.0,sector*1.0);
-                if(time>0) this.getDataGroup().getItem(0,0,0).getH2F("occTDC").fill(((ring-1)*2+half)*1.0,sector*1.0);
-                if(nphe>0) this.getDataGroup().getItem(0,0,0).getH2F("adc").fill(nphe*1.0,((sector-1)*8+(ring-1)*2+half)*1.0);
-                if(time>0) this.getDataGroup().getItem(0,0,0).getH2F("tdc").fill(time,((sector-1)*8+(ring-1)*2+half)*1.0);
+                int layer   = bank.getByte("layer", loop);
+                int comp    = bank.getShort("component", loop);
+                int order   = bank.getByte("order", loop);
+                int adc     = bank.getInt("ADC", loop);
+                float time  = bank.getFloat("time", loop);
+                System.out.println("ROW " + loop + " SECTOR = " + sector + " LAYER = " + layer + " COMPONENT = " + comp + " ORDER + " + order +
+                      " ADC = " + adc + " TIME = " + time); 
+                if(adc>0) this.getDataGroup().getItem(0,0,0).getH2F("occADC").fill(((layer-1)*2+comp)*1.0,sector*1.0);
+                if(time>0) this.getDataGroup().getItem(0,0,0).getH2F("occTDC").fill(((layer-1)*2+comp)*1.0,sector*1.0);
+                if(adc>0) this.getDataGroup().getItem(0,0,0).getH2F("adc").fill(adc*1.0,((sector-1)*8+(layer-1)*2+comp)*1.0);
+                if(time>0) this.getDataGroup().getItem(0,0,0).getH2F("tdc").fill(time,((sector-1)*8+(layer-1)*2+comp)*1.0);
                 this.getDetectorSummary().getH1F("summary").fill(sector*1.0);
 	    }
     	}

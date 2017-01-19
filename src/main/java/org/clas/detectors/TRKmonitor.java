@@ -14,8 +14,8 @@ import org.jlab.geom.prim.Point3D;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
 import org.jlab.groot.group.DataGroup;
+import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.io.evio.EvioDataBank;
 import org.jlab.rec.dc.Constants;
 import org.jlab.rec.dc.GeometryLoader;
 import org.jlab.service.dc.DCHBEngine;
@@ -179,14 +179,14 @@ public class TRKmonitor extends DetectorMonitor {
     public void PlotCrosses(DataEvent event){
     		
         if(event.hasBank("HitBasedTrkg::HBCrosses")==true){
-            EvioDataBank bank = (EvioDataBank) event.getBank("HitBasedTrkg::HBCrosses");
+            DataBank bank = event.getBank("HitBasedTrkg::HBCrosses");
             int rows = bank.rows();
             for(int loop = 0; loop < rows; loop++){
-            	int sector = bank.getInt("sector", loop);
-            	int region = bank.getInt("region", loop);
+            	int sector = bank.getByte("sector", loop);
+            	int region = bank.getByte("region", loop);
             	
-            	double x = bank.getDouble("x", loop);
-            	double y = bank.getDouble("y", loop);
+            	float x = bank.getFloat("x", loop);
+            	float y = bank.getFloat("y", loop);
             	
             	Point3D hit = new Point3D(x, -y, 0);
             	hit.translateXYZ(110.0+((int)((region-1)/2))*50, 0, 0);
@@ -200,14 +200,14 @@ public class TRKmonitor extends DetectorMonitor {
         } 
        
         if(event.hasBank("TimeBasedTrkg::TBCrosses")==true){
-            EvioDataBank bank = (EvioDataBank) event.getBank("TimeBasedTrkg::TBCrosses");
+            DataBank bank = event.getBank("TimeBasedTrkg::TBCrosses");
             int rows = bank.rows();
             for(int loop = 0; loop < rows; loop++){
-            	int sector = bank.getInt("sector", loop);
-            	int region = bank.getInt("region", loop);
+            	int sector = bank.getByte("sector", loop);
+            	int region = bank.getByte("region", loop);
             	
-            	double x = bank.getDouble("x", loop);
-            	double y = bank.getDouble("y", loop);
+            	float x = bank.getFloat("x", loop);
+            	float y = bank.getFloat("y", loop);
             	
             	Point3D hit = new Point3D(x, -y, 0);
             	hit.translateXYZ(110.0+((int)((region-1)/2))*50, 0, 0);
@@ -239,19 +239,19 @@ public class TRKmonitor extends DetectorMonitor {
         // Processing TBT
 //        enTB.processDataEvent(eventd);
         
-/*        if(event.hasBank("HitBasedTrkg::HBTracks")==true){
-	    EvioDataBank bank = (EvioDataBank) event.getBank("HitBasedTrkg::HBTracks");
+        if(event.hasBank("HitBasedTrkg::HBTracks")==true){
+	    DataBank bank = event.getBank("HitBasedTrkg::HBTracks");
 	    int rows = bank.rows();
 	    for(int loop = 0; loop < rows; loop++){
-                int sector =bank.getInt("sector",loop);
+                int sector =bank.getByte("sector",loop);
                 this.getDetectorSummary().getH1F("sumHBT").fill(sector*1.0);
 	    }
         }
         if(event.hasBank("TimeBasedTrkg::TBTracks")==true){
-	    EvioDataBank bank = (EvioDataBank) event.getBank("TimeBasedTrkg::TBTracks");
+	    DataBank bank = event.getBank("TimeBasedTrkg::TBTracks");
 	    int rows = bank.rows();
 	    for(int loop = 0; loop < rows; loop++){
-                int sector =bank.getInt("sector",loop);
+                int sector =bank.getByte("sector",loop);
                 this.getDetectorSummary().getH1F("sumTBT").fill(sector*1.0);
 	    }
         }
@@ -260,26 +260,26 @@ public class TRKmonitor extends DetectorMonitor {
             int[] nHits     = new int[]{0,0,0,0,0,0};
             int[] nClusters = new int[]{0,0,0,0,0,0};
             int[] nCrosses  = new int[]{0,0,0,0,0,0};
-	    EvioDataBank bank = (EvioDataBank) event.getBank("HitBasedTrkg::HBHits");
+	    DataBank bank = event.getBank("HitBasedTrkg::HBHits");
 	    int rows = bank.rows();
 	    for(int loop = 0; loop < rows; loop++){
-                int sector =bank.getInt("sector",loop);
+                int sector =bank.getByte("sector",loop);
                 nHits[sector-1]++;
 	    }
             for(int sector=1; sector<=6; sector++) if(nHits[sector-1]>0) this.getDataGroup().getItem(0,0,0).getH2F("numberOfHitsHBT").fill(nHits[sector-1],sector);
-            bank = (EvioDataBank) event.getBank("HitBasedTrkg::HBClusters");
+            bank = event.getBank("HitBasedTrkg::HBClusters");
 	    rows = bank.rows();
 	    for(int loop = 0; loop < rows; loop++){
-                int sector = bank.getInt("sector",loop);
-                int size   = bank.getInt("size",loop);
+                int sector = bank.getByte("sector",loop);
+                int size   = bank.getByte("size",loop);
                 nClusters[sector-1]++;
                 this.getDataGroup().getItem(0,0,0).getH2F("clusterSizeHBT").fill(size,sector);
 	    }
             for(int sector=1; sector<=6; sector++) if(nClusters[sector-1]>0) this.getDataGroup().getItem(0,0,0).getH2F("numberOfClustersHBT").fill(nClusters[sector-1],sector);
-	    bank = (EvioDataBank) event.getBank("HitBasedTrkg::HBCrosses");
+	    bank = event.getBank("HitBasedTrkg::HBCrosses");
 	    rows = bank.rows();
 	    for(int loop = 0; loop < rows; loop++){
-                int sector =bank.getInt("sector",loop);
+                int sector =bank.getByte("sector",loop);
                 nCrosses[sector-1]++;
 	    }
             for(int sector=1; sector<=6; sector++) if(nCrosses[sector-1]>0) this.getDataGroup().getItem(0,0,0).getH2F("numberOfCrossesHBT").fill(nCrosses[sector-1],sector);
@@ -288,31 +288,30 @@ public class TRKmonitor extends DetectorMonitor {
             int[] nHits     = new int[]{0,0,0,0,0,0};
             int[] nClusters = new int[]{0,0,0,0,0,0};
             int[] nCrosses  = new int[]{0,0,0,0,0,0};
-	    EvioDataBank bank = (EvioDataBank) event.getBank("TimeBasedTrkg::TBHits");
+	    DataBank bank = event.getBank("TimeBasedTrkg::TBHits");
 	    int rows = bank.rows();
 	    for(int loop = 0; loop < rows; loop++){
-                int sector =bank.getInt("sector",loop);
+                int sector =bank.getByte("sector",loop);
                 nHits[sector-1]++;
 	    }
             for(int sector=1; sector<=6; sector++) if(nHits[sector-1]>0) this.getDataGroup().getItem(0,0,0).getH2F("numberOfHitsTBT").fill(nHits[sector-1],sector);
-            bank = (EvioDataBank) event.getBank("TimeBasedTrkg::TBClusters");
+            bank = event.getBank("TimeBasedTrkg::TBClusters");
 	    rows = bank.rows();
 	    for(int loop = 0; loop < rows; loop++){
-                int sector = bank.getInt("sector",loop);
-                int size   = bank.getInt("size",loop);
+                int sector = bank.getByte("sector",loop);
+                int size   = bank.getByte("size",loop);
                 nClusters[sector-1]++;
                 this.getDataGroup().getItem(0,0,0).getH2F("clusterSizeTBT").fill(size,sector);
 	    }
             for(int sector=1; sector<=6; sector++) if(nClusters[sector-1]>0)  this.getDataGroup().getItem(0,0,0).getH2F("numberOfClustersTBT").fill(nClusters[sector-1],sector);
-	    bank = (EvioDataBank) event.getBank("TimeBasedTrkg::TBCrosses");
+	    bank = event.getBank("TimeBasedTrkg::TBCrosses");
 	    rows = bank.rows();
 	    for(int loop = 0; loop < rows; loop++){
-                int sector =bank.getInt("sector",loop);
+                int sector =bank.getByte("sector",loop);
                 nCrosses[sector-1]++;
 	    }
             for(int sector=1; sector<=6; sector++) if(nCrosses[sector-1]>0) this.getDataGroup().getItem(0,0,0).getH2F("numberOfCrossesTBT").fill(nCrosses[sector-1],sector);
-	}    
-    */    
+	}       
     }
 
     @Override
@@ -323,23 +322,7 @@ public class TRKmonitor extends DetectorMonitor {
 
     @Override
     public void timerUpdate() {
-//        this.getDetectorCanvas().cd(0);
-//        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("clusterSizeHBT"));
-//        this.getDetectorCanvas().cd(2);
-//        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfHitsHBT"));
-//        this.getDetectorCanvas().cd(4);
-//        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfClustersHBT"));
-//        this.getDetectorCanvas().cd(6);
-//        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfCrossesHBT"));
-//        this.getDetectorCanvas().cd(1);
-//        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("clusterSizeTBT"));
-//        this.getDetectorCanvas().cd(3);
-//        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfHitsTBT"));
-//        this.getDetectorCanvas().cd(5);
-//        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfClustersTBT"));
-//        this.getDetectorCanvas().cd(7);
-//        this.getDetectorCanvas().draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfCrossesTBT"));
-//        this.getDetectorCanvas().update();
+
     }
 
  
