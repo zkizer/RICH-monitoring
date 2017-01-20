@@ -82,7 +82,9 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
     		new FTOFmonitor("FTOF"),
     		new HTCCmonitor("HTCC"),
     		new LTCCmonitor("LTCC"),
-    		new ECmonitor("EC")
+    		new ECmonitor("EC"),
+    		new CTOFmonitor("CTOF"),
+    		new SVTmonitor("SVT")
     };
         
     public EventViewer() {    	
