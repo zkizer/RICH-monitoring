@@ -53,7 +53,7 @@ public class ECmonitor  extends DetectorMonitor {
         for(int layer=1; layer <= 9; layer++) {
             int stack = (int) ((layer-1)/3) + 1;
             int view  = layer - (stack-1)*3;
-            H2F occ = new H2F("occ", "layer " + layer + " Occupancy", this.npaddles[stack-1], 1, npaddles[stack-1]+1, 6, 1, 7);
+            H2F occ = new H2F("occ_lay"+layer, "layer " + layer + " Occupancy", this.npaddles[stack-1], 1, npaddles[stack-1]+1, 6, 1, 7);
             occ.setTitleX(stacks[stack-1] + " " + views[view-1] + " strip");
             occ.setTitleY("sector");
             DataGroup dg = new DataGroup(2,1);
@@ -64,7 +64,7 @@ public class ECmonitor  extends DetectorMonitor {
         // plotting histos
         for(int layer=1; layer <=9; layer++) {
             this.getDetectorCanvas().getCanvas("canvas1").cd((layer-1)+0);
-            this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occ"));
+            this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occ_lay"+layer));
         }
         this.getDetectorCanvas().getCanvas("canvas1").update();
         this.getDetectorView().getView().repaint();
@@ -101,7 +101,7 @@ public class ECmonitor  extends DetectorMonitor {
                 int adc    = bank.getInt("ADC", loop);
                 float time = bank.getFloat("time",loop);
 //                System.out.println(sector + " " + layer + " " + comp + " " + adc + " " + time);
-                if(adc>0 && time>=0) this.getDataGroup().getItem(0,layer,0).getH2F("occ").fill(comp*1.0,sector*1.0);
+                if(adc>0 && time>=0) this.getDataGroup().getItem(0,layer,0).getH2F("occ_lay"+layer).fill(comp*1.0,sector*1.0);
                 if(layer==1)      this.getDetectorSummary().getH1F("sumPCAL").fill(sector*1.0);
                 else if(layer==2) this.getDetectorSummary().getH1F("sumECin").fill(sector*1.0);
                 else              this.getDetectorSummary().getH1F("sumECout").fill(sector*1.0);

@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 import javax.imageio.ImageIO;
 import javax.swing.ButtonGroup;
@@ -43,8 +44,10 @@ import org.jlab.detector.view.DetectorListener;
 import org.jlab.detector.view.DetectorPane2D;
 import org.jlab.detector.view.DetectorShape2D;
 import org.jlab.groot.data.H2F;
+import org.jlab.groot.data.IDataSet;
 import org.jlab.groot.data.TDirectory;
 import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
+import org.jlab.groot.group.DataGroup;
 import org.jlab.io.base.DataEvent;
 import org.jlab.io.base.DataEventType;
 import org.jlab.io.task.DataSourceProcessorPane;
@@ -294,8 +297,28 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
             fileName = fc.getSelectedFile().getAbsolutePath();            
         }
         TDirectory dir = new TDirectory();
-        
+        for(int k=0; k<this.monitors.length; k++) {
+            String folder = "/" + this.monitors[k].getDetectorName();
+            dir.mkdir(folder);
+            dir.cd(folder);
+            System.out.println("Writing to folder " + folder);
+            Map<Long, DataGroup> map = this.monitors[k].getDataGroup().getMap();
+            for( Map.Entry<Long, DataGroup> entry : map.entrySet()) {
+                DataGroup group = entry.getValue();
+                int nrows = group.getRows();
+                int ncols = group.getColumns();
+                int nds   = nrows*ncols;
+                for(int i = 0; i < nds; i++){
+                    List<IDataSet> dsList = group.getData(i);
+                    for(IDataSet ds : dsList){
+                        System.out.println("\t --> " + ds.getName());
+                        dir.addDataSet(ds);
+                    }
+                }
+            }
+        }
         System.out.println("Saving histograms to file " + fileName);
+        dir.writeFile(fileName);
     }
     
     public void stateChanged(ChangeEvent e) {

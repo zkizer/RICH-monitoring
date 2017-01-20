@@ -51,11 +51,11 @@ public class DCmonitor extends DetectorMonitor {
         sum.addDataSet(summary, 0);
         this.setDetectorSummary(sum);
         for(int sector=1; sector <= 6; sector++) {
-            H2F raw = new H2F("raw", "Sector " + sector + " Occupancy", 112, 1, 113, 36, 1, 37.);
+            H2F raw = new H2F("raw_sec" + sector, "Sector " + sector + " Occupancy", 112, 1, 113, 36, 1, 37.);
             raw.setTitleX("wire");
             raw.setTitleY("layer");
             raw.setTitle("sector "+sector);
-            H2F occ = new H2F("occ", "Sector " + sector + " Occupancy", 112, 1, 113, 36, 1, 37.);
+            H2F occ = new H2F("occ_sec" + sector, "Sector " + sector + " Occupancy", 112, 1, 113, 36, 1, 37.);
             occ.setTitleX("wire");
             occ.setTitleY("layer");
             occ.setTitle("sector "+sector);
@@ -67,9 +67,9 @@ public class DCmonitor extends DetectorMonitor {
         }
         for(int sector=1; sector <=6; sector++) {
             this.getDetectorCanvas().getCanvas("canvas1").cd(sector-1);
-            this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(sector,0,0).getH2F("occ"));
+            this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(sector,0,0).getH2F("occ_sec"+sector));
             this.getDetectorCanvas().getCanvas("canvas2").cd(sector-1);
-            this.getDetectorCanvas().getCanvas("canvas2").draw(this.getDataGroup().getItem(sector,0,0).getH2F("raw"));
+            this.getDetectorCanvas().getCanvas("canvas2").draw(this.getDataGroup().getItem(sector,0,0).getH2F("raw_sec"+sector));
         }
         this.getDetectorCanvas().getCanvas("canvas1").update();
         this.getDetectorCanvas().getCanvas("canvas2").update();
@@ -137,7 +137,7 @@ public class DCmonitor extends DetectorMonitor {
                 int      wire = bank.getShort("component",i);
                 int       TDC = bank.getInt("TDC",i);
                 int     order = bank.getByte("order",i); 
-                this.getDataGroup().getItem(sector,0,0).getH2F("raw").fill(wire*1.0,layer*1.0);
+                this.getDataGroup().getItem(sector,0,0).getH2F("raw_sec"+sector).fill(wire*1.0,layer*1.0);
                 this.getDetectorSummary().getH1F("summary").fill(sector*1.0);
             }
        }       
@@ -153,9 +153,9 @@ public class DCmonitor extends DetectorMonitor {
     public void timerUpdate() {
 //        System.out.println("Updating DC");
         for(int sector=1; sector <=6; sector++) {
-            H2F raw = this.getDataGroup().getItem(sector,0,0).getH2F("raw");
+            H2F raw = this.getDataGroup().getItem(sector,0,0).getH2F("raw_sec"+sector);
             for(int loop = 0; loop < raw.getDataBufferSize(); loop++){
-                this.getDataGroup().getItem(sector,0,0).getH2F("occ").setDataBufferBin(loop,100*raw.getDataBufferBin(loop)/this.getNumberOfEvents());
+                this.getDataGroup().getItem(sector,0,0).getH2F("occ_sec"+sector).setDataBufferBin(loop,100*raw.getDataBufferBin(loop)/this.getNumberOfEvents());
             }
        }
     }

@@ -57,11 +57,11 @@ public class FTOFmonitor  extends DetectorMonitor {
         sum.addDataSet(sumP2,  2);
         this.setDetectorSummary(sum);
         for(int layer=1; layer <= 3; layer++) {
-            H2F occL = new H2F("occL", "layer " + layer + " Occupancy", this.npaddles[layer-1], 1, npaddles[layer-1]+1, 6, 1, 7);
+            H2F occL = new H2F("occL_lay"+layer, "layer " + layer + " Occupancy", this.npaddles[layer-1], 1, npaddles[layer-1]+1, 6, 1, 7);
             occL.setTitleX("paddle");
             occL.setTitleY("sector");
             occL.setTitle("Left PMTs");
-            H2F occR = new H2F("occR", "layer " + layer + " Occupancy", this.npaddles[layer-1], 1, npaddles[layer-1]+1, 6, 1, 7);
+            H2F occR = new H2F("occR_lay"+layer, "layer " + layer + " Occupancy", this.npaddles[layer-1], 1, npaddles[layer-1]+1, 6, 1, 7);
             occR.setTitleX("paddle");
             occR.setTitleY("sector");
             occR.setTitle("Right PMTs");
@@ -73,9 +73,9 @@ public class FTOFmonitor  extends DetectorMonitor {
         }
         for(int layer=1; layer <=3; layer++) {
             this.getDetectorCanvas().getCanvas("canvas1").cd((layer-1)*2+0);
-            this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occL"));
+            this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occL_lay"+layer));
             this.getDetectorCanvas().getCanvas("canvas1").cd((layer-1)*2+1);
-            this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occR"));
+            this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occR_lay"+layer));
         }
         this.getDetectorCanvas().getCanvas("canvas1").update();
         this.getDetectorView().getView().repaint();
@@ -135,8 +135,8 @@ public class FTOFmonitor  extends DetectorMonitor {
 //                           System.out.println("ROW " + i + " SECTOR = " + sector
 //                                 + " LAYER = " + layer + " PADDLE = "
 //                                 + paddle + " ADC = " + ADC);    
-                if(ADC>0 && order==0) this.getDataGroup().getItem(0,layer,0).getH2F("occL").fill(paddle*1.0,sector*1.0);
-                if(ADC>0 && order==1) this.getDataGroup().getItem(0,layer,0).getH2F("occR").fill(paddle*1.0,sector*1.0);
+                if(ADC>0 && order==0) this.getDataGroup().getItem(0,layer,0).getH2F("occL_lay"+layer).fill(paddle*1.0,sector*1.0);
+                if(ADC>0 && order==1) this.getDataGroup().getItem(0,layer,0).getH2F("occR_lay"+layer).fill(paddle*1.0,sector*1.0);
                 if(layer==1)      this.getDetectorSummary().getH1F("sumP1A").fill(sector*1.0);
                 else if (layer==2)this.getDetectorSummary().getH1F("sumP1B").fill(sector*1.0);
                 else              this.getDetectorSummary().getH1F("sumP2").fill(sector*1.0);

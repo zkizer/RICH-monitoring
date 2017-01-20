@@ -25,7 +25,7 @@ public class DetectorMonitor implements IDataEventListener {
     private IndexedList<DataGroup> detectorData    = new IndexedList<DataGroup>(3);
     private DataGroup              detectorSummary = null;
     private JPanel                 detectorPanel   = null;
-    private EmbeddedCanvasTabbed         detectorCanvas  = null;
+    private EmbeddedCanvasTabbed   detectorCanvas  = null;
     private DetectorPane2D         detectorView    = null;
     private int                    numberOfEvents;
 
