@@ -28,6 +28,7 @@ public class ECmonitor  extends DetectorMonitor {
     public ECmonitor(String name) {
         super(name);
         
+        this.getDetectorCanvas().addCanvas("canvas1");
         this.init();
     }
 

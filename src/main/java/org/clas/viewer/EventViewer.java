@@ -78,7 +78,7 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
    // detector monitors
     DetectorMonitor[] monitors = {
     		new DCmonitor("DC"),
-                new TRKmonitor("TRK"),
+            new TRKmonitor("TRK"),
     		new FTOFmonitor("FTOF"),
     		new HTCCmonitor("HTCC"),
     		new LTCCmonitor("LTCC"),
@@ -125,7 +125,8 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         mainPanel.add(processorPane,BorderLayout.PAGE_END);
         
     
-        CLAS12Canvas    = new EmbeddedCanvasTabbed();
+        CLAS12Canvas    = new EmbeddedCanvasTabbed(true);
+        CLAS12Canvas.addCanvas("canvas1");
         CLAS12Canvas.getCanvas("canvas1").divide(3,4);
         CLAS12Canvas.getCanvas("canvas1").setGridX(false);
         CLAS12Canvas.getCanvas("canvas1").setGridY(false);

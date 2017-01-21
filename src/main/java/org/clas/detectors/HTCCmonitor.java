@@ -23,6 +23,7 @@ public class HTCCmonitor  extends DetectorMonitor {
     public HTCCmonitor(String name) {
         super(name);
         
+        this.getDetectorCanvas().addCanvas("canvas1");
         this.init();
     }
 

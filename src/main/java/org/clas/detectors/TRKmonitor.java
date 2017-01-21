@@ -40,12 +40,13 @@ public class TRKmonitor extends DetectorMonitor {
         super(name);
         
         // initializa monitoring panel
+        this.getDetectorCanvas().addCanvas("canvas1");
         this.init();
         
         // initialize reconstruction engines
         enHead.init();	
-	enHB.init();
-	enTB.init();
+        enHB.init();
+        enTB.init();
 
     }
 
