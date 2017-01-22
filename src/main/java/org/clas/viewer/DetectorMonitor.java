@@ -5,7 +5,6 @@
  */
 package org.clas.viewer;
 
-import java.util.ArrayList;
 import javax.swing.JPanel;
 import org.jlab.detector.view.DetectorPane2D;
 import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
@@ -32,7 +31,7 @@ public class DetectorMonitor implements IDataEventListener {
     public DetectorMonitor(String name){
         this.detectorName = name;
         this.detectorPanel  = new JPanel();
-        this.detectorCanvas = new EmbeddedCanvasTabbed();
+        this.detectorCanvas = new EmbeddedCanvasTabbed(true);
         this.detectorView   = new DetectorPane2D();
         this.numberOfEvents = 0;
     }

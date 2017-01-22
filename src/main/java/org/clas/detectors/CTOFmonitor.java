@@ -21,6 +21,7 @@ public class CTOFmonitor  extends DetectorMonitor {
     public CTOFmonitor(String name) {
         super(name);
         
+        this.getDetectorCanvas().addCanvas("canvas1");
         this.init();
     }
 

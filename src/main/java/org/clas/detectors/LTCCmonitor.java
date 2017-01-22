@@ -21,6 +21,7 @@ public class LTCCmonitor  extends DetectorMonitor {
     public LTCCmonitor(String name) {
         super(name);
         
+        this.getDetectorCanvas().addCanvas("canvas1");
         this.init();
     }
 

@@ -21,6 +21,7 @@ public class SVTmonitor  extends DetectorMonitor {
     public SVTmonitor(String name) {
         super(name);
         
+        this.getDetectorCanvas().addCanvas("canvas1");
         this.init();
     }
 
