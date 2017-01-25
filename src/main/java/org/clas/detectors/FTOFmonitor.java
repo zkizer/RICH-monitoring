@@ -12,6 +12,7 @@ import org.jlab.detector.base.DetectorType;
 import org.jlab.detector.view.DetectorShape2D;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
+import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 import org.jlab.groot.group.DataGroup;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
@@ -29,7 +30,8 @@ public class FTOFmonitor  extends DetectorMonitor {
     public FTOFmonitor(String name) {
         super(name);
         
-        this.getDetectorCanvas().addCanvas("canvas1");
+        EmbeddedCanvasTabbed canvas = new EmbeddedCanvasTabbed("Occupancies");
+        this.setDetectorCanvas(canvas);
         this.init();
     }
 
@@ -37,9 +39,9 @@ public class FTOFmonitor  extends DetectorMonitor {
     public void createHistos() {
         // initialize canvas and create histograms
         this.setNumberOfEvents(0);
-        this.getDetectorCanvas().getCanvas("canvas1").divide(2, 3);
-        this.getDetectorCanvas().getCanvas("canvas1").setGridX(false);
-        this.getDetectorCanvas().getCanvas("canvas1").setGridY(false);
+        this.getDetectorCanvas().getCanvas("Occupancies").divide(2, 3);
+        this.getDetectorCanvas().getCanvas("Occupancies").setGridX(false);
+        this.getDetectorCanvas().getCanvas("Occupancies").setGridY(false);
         H1F sumP1A = new H1F("sumP1A","sumP1A",6,1,7);
         sumP1A.setTitleX("sector");
         sumP1A.setTitleY("FTOF P1A hits");
@@ -73,12 +75,12 @@ public class FTOFmonitor  extends DetectorMonitor {
             this.getDataGroup().add(dg,0,layer,0);
         }
         for(int layer=1; layer <=3; layer++) {
-            this.getDetectorCanvas().getCanvas("canvas1").cd((layer-1)*2+0);
-            this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occL_lay"+layer));
-            this.getDetectorCanvas().getCanvas("canvas1").cd((layer-1)*2+1);
-            this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occR_lay"+layer));
+            this.getDetectorCanvas().getCanvas("Occupancies").cd((layer-1)*2+0);
+            this.getDetectorCanvas().getCanvas("Occupancies").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occL_lay"+layer));
+            this.getDetectorCanvas().getCanvas("Occupancies").cd((layer-1)*2+1);
+            this.getDetectorCanvas().getCanvas("Occupancies").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occR_lay"+layer));
         }
-        this.getDetectorCanvas().getCanvas("canvas1").update();
+        this.getDetectorCanvas().getCanvas("Occupancies").update();
         this.getDetectorView().getView().repaint();
         this.getDetectorView().update();
     }

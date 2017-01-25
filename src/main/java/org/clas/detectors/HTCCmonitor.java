@@ -9,6 +9,7 @@ import java.awt.BorderLayout;
 import org.clas.viewer.DetectorMonitor;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
+import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 import org.jlab.groot.group.DataGroup;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
@@ -23,7 +24,8 @@ public class HTCCmonitor  extends DetectorMonitor {
     public HTCCmonitor(String name) {
         super(name);
         
-        this.getDetectorCanvas().addCanvas("canvas1");
+        EmbeddedCanvasTabbed canvas = new EmbeddedCanvasTabbed("Occupancies and Spectra");
+        this.setDetectorCanvas(canvas);
         this.init();
     }
 
@@ -31,9 +33,9 @@ public class HTCCmonitor  extends DetectorMonitor {
     public void createHistos() {
         // initialize canvas and create histograms
         this.setNumberOfEvents(0);
-        this.getDetectorCanvas().getCanvas("canvas1").divide(2, 2);
-        this.getDetectorCanvas().getCanvas("canvas1").setGridX(false);
-        this.getDetectorCanvas().getCanvas("canvas1").setGridY(false);
+        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").divide(2, 2);
+        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").setGridX(false);
+        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").setGridY(false);
         H1F summary = new H1F("summary","summary",6,1,7);
         summary.setTitleX("sector");
         summary.setTitleY("HTCC hits");
@@ -62,15 +64,15 @@ public class HTCCmonitor  extends DetectorMonitor {
         this.getDataGroup().add(dg,0,0,0);
         
         // plotting histos
-        this.getDetectorCanvas().getCanvas("canvas1").cd(0);
-        this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,0,0).getH2F("occADC"));
-        this.getDetectorCanvas().getCanvas("canvas1").cd(1);
-        this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,0,0).getH2F("occTDC"));
-        this.getDetectorCanvas().getCanvas("canvas1").cd(2);
-        this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,0,0).getH2F("adc"));
-        this.getDetectorCanvas().getCanvas("canvas1").cd(3);
-        this.getDetectorCanvas().getCanvas("canvas1").draw(this.getDataGroup().getItem(0,0,0).getH2F("tdc"));
-        this.getDetectorCanvas().getCanvas("canvas1").update();
+        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").cd(0);
+        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").draw(this.getDataGroup().getItem(0,0,0).getH2F("occADC"));
+        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").cd(1);
+        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").draw(this.getDataGroup().getItem(0,0,0).getH2F("occTDC"));
+        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").cd(2);
+        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").draw(this.getDataGroup().getItem(0,0,0).getH2F("adc"));
+        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").cd(3);
+        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").draw(this.getDataGroup().getItem(0,0,0).getH2F("tdc"));
+        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").update();
         this.getDetectorView().getView().repaint();
         this.getDetectorView().update();
 

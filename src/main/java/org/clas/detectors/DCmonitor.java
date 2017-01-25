@@ -12,6 +12,7 @@ import org.jlab.detector.base.DetectorType;
 import org.jlab.detector.view.DetectorShape2D;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
+import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 import org.jlab.groot.group.DataGroup;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
@@ -27,9 +28,9 @@ public class DCmonitor extends DetectorMonitor {
 
     public DCmonitor(String name) {
         super(name);
-        
-        this.getDetectorCanvas().addCanvas("mainCan");
-        this.getDetectorCanvas().addCanvas("canvas2");
+        EmbeddedCanvasTabbed canvas = new EmbeddedCanvasTabbed("Normalized Occupancies");
+        canvas.addCanvas("Raw Occupancies");
+        this.setDetectorCanvas(canvas);
         this.init();
     }
 
@@ -38,12 +39,12 @@ public class DCmonitor extends DetectorMonitor {
     public void createHistos() {
         // initialize canvas and create histograms
         this.setNumberOfEvents(0);
-        this.getDetectorCanvas().getCanvas("mainCan").divide(2, 3);
-        this.getDetectorCanvas().getCanvas("mainCan").setGridX(false);
-        this.getDetectorCanvas().getCanvas("mainCan").setGridY(false);
-        this.getDetectorCanvas().getCanvas("canvas2").divide(2, 3);
-        this.getDetectorCanvas().getCanvas("canvas2").setGridX(false);
-        this.getDetectorCanvas().getCanvas("canvas2").setGridY(false);
+        this.getDetectorCanvas().getCanvas("Normalized Occupancies").divide(2, 3);
+        this.getDetectorCanvas().getCanvas("Normalized Occupancies").setGridX(false);
+        this.getDetectorCanvas().getCanvas("Normalized Occupancies").setGridY(false);
+        this.getDetectorCanvas().getCanvas("Raw Occupancies").divide(2, 3);
+        this.getDetectorCanvas().getCanvas("Raw Occupancies").setGridX(false);
+        this.getDetectorCanvas().getCanvas("Raw Occupancies").setGridY(false);
         H1F summary = new H1F("summary","summary",6,1,7);
         summary.setTitleX("sector");
         summary.setTitleY("DC hits");
@@ -67,13 +68,13 @@ public class DCmonitor extends DetectorMonitor {
             this.getDataGroup().add(dg, sector,0,0);
         }
         for(int sector=1; sector <=6; sector++) {
-            this.getDetectorCanvas().getCanvas("mainCan").cd(sector-1);
-            this.getDetectorCanvas().getCanvas("mainCan").draw(this.getDataGroup().getItem(sector,0,0).getH2F("occ_sec"+sector));
-            this.getDetectorCanvas().getCanvas("canvas2").cd(sector-1);
-            this.getDetectorCanvas().getCanvas("canvas2").draw(this.getDataGroup().getItem(sector,0,0).getH2F("raw_sec"+sector));
+            this.getDetectorCanvas().getCanvas("Normalized Occupancies").cd(sector-1);
+            this.getDetectorCanvas().getCanvas("Normalized Occupancies").draw(this.getDataGroup().getItem(sector,0,0).getH2F("occ_sec"+sector));
+            this.getDetectorCanvas().getCanvas("Raw Occupancies").cd(sector-1);
+            this.getDetectorCanvas().getCanvas("Raw Occupancies").draw(this.getDataGroup().getItem(sector,0,0).getH2F("raw_sec"+sector));
         }
-        this.getDetectorCanvas().getCanvas("mainCan").update();
-        this.getDetectorCanvas().getCanvas("canvas2").update();
+        this.getDetectorCanvas().getCanvas("Normalized Occupancies").update();
+        this.getDetectorCanvas().getCanvas("Raw Occupancies").update();
 
     }
 
@@ -131,6 +132,7 @@ public class DCmonitor extends DetectorMonitor {
         // process event info and save into data group
         if(event.hasBank("DC::tdc")==true){
             DataBank  bank = event.getBank("DC::tdc");
+            this.getDetectorOccupany().addTDCBank(bank);
             int rows = bank.rows();
             for(int i = 0; i < rows; i++){
                 int    sector = bank.getByte("sector",i);
@@ -163,8 +165,8 @@ public class DCmonitor extends DetectorMonitor {
 
     @Override
     public void setCanvasUpdate(int time) {
-        this.getDetectorCanvas().getCanvas("mainCan").initTimer(time);
-        this.getDetectorCanvas().getCanvas("canvas2").initTimer(time);
+        this.getDetectorCanvas().getCanvas("Normalized Occupancies").initTimer(time);
+        this.getDetectorCanvas().getCanvas("Raw Occupancies").initTimer(time);
     }
  
 

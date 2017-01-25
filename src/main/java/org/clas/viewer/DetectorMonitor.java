@@ -6,6 +6,7 @@
 package org.clas.viewer;
 
 import javax.swing.JPanel;
+import org.jlab.detector.base.DetectorOccupancy;
 import org.jlab.detector.view.DetectorPane2D;
 import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 import org.jlab.groot.group.DataGroup;
@@ -21,17 +22,18 @@ import org.jlab.utils.groups.IndexedList;
 public class DetectorMonitor implements IDataEventListener {    
     
     private final String           detectorName;
-    private IndexedList<DataGroup> detectorData    = new IndexedList<DataGroup>(3);
-    private DataGroup              detectorSummary = null;
-    private JPanel                 detectorPanel   = null;
-    private EmbeddedCanvasTabbed   detectorCanvas  = null;
-    private DetectorPane2D         detectorView    = null;
+    private IndexedList<DataGroup> detectorData      = new IndexedList<DataGroup>(3);
+    private DataGroup              detectorSummary   = null;
+    private DetectorOccupancy      detectorOccupancy = new DetectorOccupancy();
+    private JPanel                 detectorPanel     = null;
+    private EmbeddedCanvasTabbed   detectorCanvas    = null;
+    private DetectorPane2D         detectorView      = null;
     private int                    numberOfEvents;
 
     public DetectorMonitor(String name){
         this.detectorName = name;
         this.detectorPanel  = new JPanel();
-        this.detectorCanvas = new EmbeddedCanvasTabbed(true);
+        this.detectorCanvas = new EmbeddedCanvasTabbed();
         this.detectorView   = new DetectorPane2D();
         this.numberOfEvents = 0;
     }
@@ -74,6 +76,10 @@ public class DetectorMonitor implements IDataEventListener {
         return detectorName;
     }
     
+    public DetectorOccupancy getDetectorOccupany() {
+        return detectorOccupancy;
+    }
+    
     public JPanel getDetectorPanel() {
         return detectorPanel;
     }
@@ -107,8 +113,12 @@ public class DetectorMonitor implements IDataEventListener {
         
     }
     
+    public void setDetectorCanvas(EmbeddedCanvasTabbed canvas) {
+        this.detectorCanvas = canvas;
+    }
+    
     public void setCanvasUpdate(int time) {
-        this.detectorCanvas.getCanvas("canvas1").initTimer(time);
+        this.detectorCanvas.getCanvas().initTimer(time);
     }
     
     public void setDetectorSummary(DataGroup group) {
