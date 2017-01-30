@@ -24,8 +24,7 @@ public class HTCCmonitor  extends DetectorMonitor {
     public HTCCmonitor(String name) {
         super(name);
         
-        EmbeddedCanvasTabbed canvas = new EmbeddedCanvasTabbed("Occupancies and Spectra");
-        this.setDetectorCanvas(canvas);
+        this.setDetectorTabNames("Occupancies and Spectra");
         this.init();
     }
 
@@ -53,29 +52,15 @@ public class HTCCmonitor  extends DetectorMonitor {
         adc.setTitleX("adc");
         adc.setTitleY("pmt");
         H2F tdc = new H2F("tdc", "tdc", 100, 0, 250, 48, 1, 49);
-        adc.setTitleX("adc");
-        adc.setTitleY("pmt");
+        tdc.setTitleX("adc");
+        tdc.setTitleY("pmt");
            
-        DataGroup dg = new DataGroup(2,1);
+        DataGroup dg = new DataGroup(2,2);
         dg.addDataSet(occADC, 0);
         dg.addDataSet(occTDC, 1);
         dg.addDataSet(adc, 2);
         dg.addDataSet(tdc, 3);
         this.getDataGroup().add(dg,0,0,0);
-        
-        // plotting histos
-        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").cd(0);
-        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").draw(this.getDataGroup().getItem(0,0,0).getH2F("occADC"));
-        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").cd(1);
-        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").draw(this.getDataGroup().getItem(0,0,0).getH2F("occTDC"));
-        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").cd(2);
-        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").draw(this.getDataGroup().getItem(0,0,0).getH2F("adc"));
-        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").cd(3);
-        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").draw(this.getDataGroup().getItem(0,0,0).getH2F("tdc"));
-        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").update();
-        this.getDetectorView().getView().repaint();
-        this.getDetectorView().update();
-
     }
 
     public void drawDetector() {
@@ -92,8 +77,25 @@ public class HTCCmonitor  extends DetectorMonitor {
 //        splitPane.setRightComponent(this.getDetectorCanvas());
         this.getDetectorPanel().add(this.getDetectorCanvas(),BorderLayout.CENTER); 
         this.createHistos();
+        this.plotHistos();
     }
         
+    @Override
+    public void plotHistos() {
+        // plotting histos
+        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").cd(0);
+        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").draw(this.getDataGroup().getItem(0,0,0).getH2F("occADC"));
+        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").cd(1);
+        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").draw(this.getDataGroup().getItem(0,0,0).getH2F("occTDC"));
+        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").cd(2);
+        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").draw(this.getDataGroup().getItem(0,0,0).getH2F("adc"));
+        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").cd(3);
+        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").draw(this.getDataGroup().getItem(0,0,0).getH2F("tdc"));
+        this.getDetectorCanvas().getCanvas("Occupancies and Spectra").update();
+        this.getDetectorView().getView().repaint();
+        this.getDetectorView().update();
+    }
+
     @Override
     public void processEvent(DataEvent event) {
         // process event info and save into data group
@@ -123,6 +125,7 @@ public class HTCCmonitor  extends DetectorMonitor {
     public void resetEventListener() {
         System.out.println("Resetting HTCC histogram");
         this.createHistos();
+        this.plotHistos();
     }
 
     @Override

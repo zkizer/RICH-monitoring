@@ -22,8 +22,7 @@ public class CTOFmonitor  extends DetectorMonitor {
     public CTOFmonitor(String name) {
         super(name);
         
-        EmbeddedCanvasTabbed canvas = new EmbeddedCanvasTabbed("Occupancies");
-        this.setDetectorCanvas(canvas);
+        this.setDetectorTabNames("Occupancies");
         this.init();
     }
 
@@ -45,25 +44,12 @@ public class CTOFmonitor  extends DetectorMonitor {
         H2F occTDC = new H2F("occTDC", "occTDC", 8, 1, 9, 6, 1, 7);
         H2F adc = new H2F("adc", "adc", 50, 0, 50, 48, 1, 49);
         H2F tdc = new H2F("tdc", "tdc", 100, 0, 250, 48, 1, 49);
-        DataGroup dg = new DataGroup(2,1);
+        DataGroup dg = new DataGroup(2,2);
         dg.addDataSet(occADC, 0);
         dg.addDataSet(occTDC, 1);
         dg.addDataSet(adc, 2);
         dg.addDataSet(tdc, 3);
         this.getDataGroup().add(dg,0,0,0);
-        
-        // plotting histos
-        this.getDetectorCanvas().getCanvas("Occupancies").cd(0);
-        this.getDetectorCanvas().getCanvas("Occupancies").draw(this.getDataGroup().getItem(0,0,0).getH2F("occADC"));
-        this.getDetectorCanvas().getCanvas("Occupancies").cd(1);
-        this.getDetectorCanvas().getCanvas("Occupancies").draw(this.getDataGroup().getItem(0,0,0).getH2F("occTDC"));
-        this.getDetectorCanvas().getCanvas("Occupancies").cd(2);
-        this.getDetectorCanvas().getCanvas("Occupancies").draw(this.getDataGroup().getItem(0,0,0).getH2F("adc"));
-        this.getDetectorCanvas().getCanvas("Occupancies").cd(3);
-        this.getDetectorCanvas().getCanvas("Occupancies").draw(this.getDataGroup().getItem(0,0,0).getH2F("tdc"));
-        this.getDetectorCanvas().getCanvas("Occupancies").update();
-        this.getDetectorView().getView().repaint();
-        this.getDetectorView().update();
     }
 
     public void drawDetector() {
@@ -80,8 +66,24 @@ public class CTOFmonitor  extends DetectorMonitor {
 //        splitPane.setRightComponent(this.getDetectorCanvas());
         this.getDetectorPanel().add(this.getDetectorCanvas(),BorderLayout.CENTER);
         this.createHistos();
+        this.plotHistos();
     }
         
+    @Override
+    public void plotHistos() {        
+        // plotting histos
+        this.getDetectorCanvas().getCanvas("Occupancies").cd(0);
+        this.getDetectorCanvas().getCanvas("Occupancies").draw(this.getDataGroup().getItem(0,0,0).getH2F("occADC"));
+        this.getDetectorCanvas().getCanvas("Occupancies").cd(1);
+        this.getDetectorCanvas().getCanvas("Occupancies").draw(this.getDataGroup().getItem(0,0,0).getH2F("occTDC"));
+        this.getDetectorCanvas().getCanvas("Occupancies").cd(2);
+        this.getDetectorCanvas().getCanvas("Occupancies").draw(this.getDataGroup().getItem(0,0,0).getH2F("adc"));
+        this.getDetectorCanvas().getCanvas("Occupancies").cd(3);
+        this.getDetectorCanvas().getCanvas("Occupancies").draw(this.getDataGroup().getItem(0,0,0).getH2F("tdc"));
+        this.getDetectorCanvas().getCanvas("Occupancies").update();
+        this.getDetectorView().update();
+    }
+
     @Override
     public void processEvent(DataEvent event) {
         // process event info and save into data group
@@ -92,6 +94,7 @@ public class CTOFmonitor  extends DetectorMonitor {
     public void resetEventListener() {
         System.out.println("Resetting CTOF histogram");
         this.createHistos();
+        this.plotHistos();
     }
 
     @Override

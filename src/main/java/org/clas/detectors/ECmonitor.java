@@ -23,14 +23,13 @@ import org.jlab.io.base.DataEvent;
  */
 public class ECmonitor  extends DetectorMonitor {
 
-    private final int[] npaddles = new int[]{72,36,36};
+    private final int[] npaddles = new int[]{68,62,62,36,36,36,36,36,36};
         
     
     public ECmonitor(String name) {
         super(name);
-        
-        EmbeddedCanvasTabbed canvas = new EmbeddedCanvasTabbed("Occupancies");
-        this.setDetectorCanvas(canvas);
+
+        this.setDetectorTabNames("Occupancies");
         this.init();
     }
 
@@ -56,23 +55,13 @@ public class ECmonitor  extends DetectorMonitor {
         for(int layer=1; layer <= 9; layer++) {
             int stack = (int) ((layer-1)/3) + 1;
             int view  = layer - (stack-1)*3;
-            H2F occ = new H2F("occ_lay"+layer, "layer " + layer + " Occupancy", this.npaddles[stack-1], 1, npaddles[stack-1]+1, 6, 1, 7);
+            H2F occ = new H2F("occ_lay"+layer, "layer " + layer + " Occupancy", this.npaddles[layer-1], 1, npaddles[layer-1]+1, 6, 1, 7);
             occ.setTitleX(stacks[stack-1] + " " + views[view-1] + " strip");
             occ.setTitleY("sector");
             DataGroup dg = new DataGroup(2,1);
             dg.addDataSet(occ, 0);
             this.getDataGroup().add(dg,0,layer,0);
         }
-        
-        // plotting histos
-        for(int layer=1; layer <=9; layer++) {
-            this.getDetectorCanvas().getCanvas("Occupancies").cd((layer-1)+0);
-            this.getDetectorCanvas().getCanvas("Occupancies").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occ_lay"+layer));
-        }
-        this.getDetectorCanvas().getCanvas("Occupancies").update();
-        this.getDetectorView().getView().repaint();
-        this.getDetectorView().update();
-
     }
 
     public void drawDetector() {
@@ -87,10 +76,23 @@ public class ECmonitor  extends DetectorMonitor {
         JSplitPane   splitPane = new JSplitPane();
         splitPane.setLeftComponent(this.getDetectorView());
         splitPane.setRightComponent(this.getDetectorCanvas());
-        this.getDetectorPanel().add(splitPane,BorderLayout.CENTER); 
+        this.getDetectorPanel().add(this.getDetectorCanvas(),BorderLayout.CENTER); 
         this.createHistos();
+        this.plotHistos();
     }
         
+    @Override
+    public void plotHistos() {        
+        // plotting histos
+        for(int layer=1; layer <=9; layer++) {
+            this.getDetectorCanvas().getCanvas("Occupancies").cd((layer-1)+0);
+            this.getDetectorCanvas().getCanvas("Occupancies").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occ_lay"+layer));
+        }
+        this.getDetectorCanvas().getCanvas("Occupancies").update();
+        this.getDetectorView().getView().repaint();
+        this.getDetectorView().update();
+    }
+
     @Override
     public void processEvent(DataEvent event) {
         // process event info and save into data group
@@ -117,6 +119,7 @@ public class ECmonitor  extends DetectorMonitor {
     public void resetEventListener() {
         System.out.println("Resetting EC histogram");
         this.createHistos();
+        this.plotHistos();
     }
 
     @Override

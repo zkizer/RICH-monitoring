@@ -5,9 +5,15 @@
  */
 package org.clas.viewer;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import javax.swing.JPanel;
 import org.jlab.detector.base.DetectorOccupancy;
 import org.jlab.detector.view.DetectorPane2D;
+import org.jlab.groot.base.GStyle;
+import org.jlab.groot.data.IDataSet;
+import org.jlab.groot.data.TDirectory;
 import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 import org.jlab.groot.group.DataGroup;
 import org.jlab.io.base.DataEvent;
@@ -22,6 +28,7 @@ import org.jlab.utils.groups.IndexedList;
 public class DetectorMonitor implements IDataEventListener {    
     
     private final String           detectorName;
+    private ArrayList<String>      detectorTabNames  = new ArrayList();
     private IndexedList<DataGroup> detectorData      = new IndexedList<DataGroup>(3);
     private DataGroup              detectorSummary   = null;
     private DetectorOccupancy      detectorOccupancy = new DetectorOccupancy();
@@ -31,6 +38,10 @@ public class DetectorMonitor implements IDataEventListener {
     private int                    numberOfEvents;
 
     public DetectorMonitor(String name){
+        GStyle.getAxisAttributesX().setTitleFontSize(18);
+        GStyle.getAxisAttributesX().setLabelFontSize(14);
+        GStyle.getAxisAttributesY().setTitleFontSize(18);
+        GStyle.getAxisAttributesY().setLabelFontSize(14);
         this.detectorName = name;
         this.detectorPanel  = new JPanel();
         this.detectorCanvas = new EmbeddedCanvasTabbed();
@@ -66,6 +77,10 @@ public class DetectorMonitor implements IDataEventListener {
 
     public EmbeddedCanvasTabbed getDetectorCanvas() {
         return detectorCanvas;
+    }
+    
+    public ArrayList<String> getDetectorTabNames() {
+        return detectorTabNames;
     }
     
     public IndexedList<DataGroup>  getDataGroup(){
@@ -104,8 +119,21 @@ public class DetectorMonitor implements IDataEventListener {
         // process event
     }
     
+    public void printCanvas(String dir) {
+        // print canvas to files
+        for(int tab=0; tab<this.detectorTabNames.size(); tab++) {
+            String fileName = dir + "/" + this.detectorName + "_canvas" + tab + ".png";
+            System.out.println(fileName);
+            this.detectorCanvas.getCanvas(this.detectorTabNames.get(tab)).save(fileName);
+        }
+    }
+    
     public void plotEvent(DataEvent event) {
         // process event
+    }
+    
+    public void plotHistos() {
+
     }
     
     @Override
@@ -113,14 +141,24 @@ public class DetectorMonitor implements IDataEventListener {
         
     }
     
+    public void setCanvasUpdate(int time) {
+        for(int tab=0; tab<this.detectorTabNames.size(); tab++) {
+            this.detectorCanvas.getCanvas(this.detectorTabNames.get(tab)).initTimer(time);
+        }
+    }
+    
     public void setDetectorCanvas(EmbeddedCanvasTabbed canvas) {
         this.detectorCanvas = canvas;
     }
     
-    public void setCanvasUpdate(int time) {
-        this.detectorCanvas.getCanvas().initTimer(time);
+    public void setDetectorTabNames(String... names) {
+        for(String name : names) {
+            this.detectorTabNames.add(name);
+        }
+        EmbeddedCanvasTabbed canvas = new EmbeddedCanvasTabbed(names);
+        this.setDetectorCanvas(canvas);
     }
-    
+ 
     public void setDetectorSummary(DataGroup group) {
         this.detectorSummary = group;
     }
@@ -134,5 +172,71 @@ public class DetectorMonitor implements IDataEventListener {
         
     }
  
+    public void readDataGroup(TDirectory dir) {
+        String folder = this.getDetectorName() + "/";
+        System.out.println("Reading from: " + folder);
+        DataGroup sum = this.getDetectorSummary();
+        int nrows = sum.getRows();
+        int ncols = sum.getColumns();
+        int nds   = nrows*ncols;
+        DataGroup newSum = new DataGroup(ncols,nrows);
+        for(int i = 0; i < nds; i++){
+            List<IDataSet> dsList = sum.getData(i);
+            for(IDataSet ds : dsList){
+                System.out.println("\t --> " + ds.getName());
+                newSum.addDataSet(dir.getObject(folder, ds.getName()),i);
+            }
+        }            
+        this.setDetectorSummary(newSum);
+        Map<Long, DataGroup> map = this.getDataGroup().getMap();
+        for( Map.Entry<Long, DataGroup> entry : map.entrySet()) {
+            Long key = entry.getKey();
+            DataGroup group = entry.getValue();
+            nrows = group.getRows();
+            ncols = group.getColumns();
+            nds   = nrows*ncols;
+            DataGroup newGroup = new DataGroup(ncols,nrows);
+            for(int i = 0; i < nds; i++){
+                List<IDataSet> dsList = group.getData(i);
+                for(IDataSet ds : dsList){
+                    System.out.println("\t --> " + ds.getName());
+                    newGroup.addDataSet(dir.getObject(folder, ds.getName()),i);
+                }
+            }
+            map.replace(key, newGroup);
+        }
+        this.plotHistos();
+    }
     
+    public void writeDataGroup(TDirectory dir) {
+        String folder = "/" + this.getDetectorName();
+        dir.mkdir(folder);
+        dir.cd(folder);
+        DataGroup sum = this.getDetectorSummary();
+        int nrows = sum.getRows();
+        int ncols = sum.getColumns();
+        int nds   = nrows*ncols;
+        for(int i = 0; i < nds; i++){
+            List<IDataSet> dsList = sum.getData(i);
+            for(IDataSet ds : dsList){
+                System.out.println("\t --> " + ds.getName());
+                dir.addDataSet(ds);
+            }
+        }            
+        Map<Long, DataGroup> map = this.getDataGroup().getMap();
+        for( Map.Entry<Long, DataGroup> entry : map.entrySet()) {
+            DataGroup group = entry.getValue();
+            nrows = group.getRows();
+            ncols = group.getColumns();
+            nds   = nrows*ncols;
+            for(int i = 0; i < nds; i++){
+                List<IDataSet> dsList = group.getData(i);
+                for(IDataSet ds : dsList){
+                    System.out.println("\t --> " + ds.getName());
+                    dir.addDataSet(ds);
+                }
+            }
+        }
+    }
+        
 }

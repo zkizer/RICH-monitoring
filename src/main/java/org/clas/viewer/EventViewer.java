@@ -9,14 +9,15 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import javax.imageio.ImageIO;
+
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
-
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -33,19 +34,18 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
+
 import org.clas.detectors.*;
 import org.jlab.detector.decode.CLASDecoder;
-
 import org.jlab.detector.decode.CodaEventDecoder;
 import org.jlab.detector.decode.DetectorEventDecoder;
 import org.jlab.detector.view.DetectorListener;
 import org.jlab.detector.view.DetectorPane2D;
 import org.jlab.detector.view.DetectorShape2D;
-import org.jlab.groot.data.H2F;
-import org.jlab.groot.data.IDataSet;
+import org.jlab.groot.base.GStyle;
 import org.jlab.groot.data.TDirectory;
 import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
-import org.jlab.groot.group.DataGroup;
+import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
 import org.jlab.io.base.DataEventType;
 import org.jlab.io.evio.EvioDataEvent;
@@ -64,54 +64,60 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
     JPanel mainPanel 				= null;
     JMenuBar menuBar                            = null;
     DataSourceProcessorPane processorPane 	= null;
-    EmbeddedCanvasTabbed CLAS12Canvas                 = null;
+    EmbeddedCanvasTabbed CLAS12Canvas           = null;
 
     
     CodaEventDecoder               decoder = new CodaEventDecoder();
     CLASDecoder                clasDecoder = new CLASDecoder();
     DetectorEventDecoder   detectorDecoder = new DetectorEventDecoder();
-       
-    
-    TreeMap<String, List<H2F>>  histos = new TreeMap<String,List<H2F>>();
-    
+           
     private int updateTime = 2000;
+    private int runNumber  = 0;
     
    // detector monitors
     DetectorMonitor[] monitors = {
     		new DCmonitor("DC"),
-            new TRKmonitor("TRK"),
-    		new FTOFmonitor("FTOF"),
     		new HTCCmonitor("HTCC"),
     		new LTCCmonitor("LTCC"),
+    		new FTOFmonitor("FTOF"),
     		new ECmonitor("EC"),
     		new CTOFmonitor("CTOF"),
-    		new SVTmonitor("SVT")
     };
         
     public EventViewer() {    	
         		
 	// create menu bar
         menuBar = new JMenuBar();
-        JMenu settings = new JMenu("Settings");
         JMenuItem menuItem;
+        JMenu file = new JMenu("File");
+        file.setMnemonic(KeyEvent.VK_A);
+        file.getAccessibleContext().setAccessibleDescription("File options");
+        menuItem = new JMenuItem("Open histograms file...", KeyEvent.VK_O);
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
+        menuItem.getAccessibleContext().setAccessibleDescription("Open histograms file");
+        menuItem.addActionListener(this);
+        file.add(menuItem);
+         menuItem = new JMenuItem("Print histograms to file...", KeyEvent.VK_P);
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK));
+        menuItem.getAccessibleContext().setAccessibleDescription("Print histograms to file");
+        menuItem.addActionListener(this);
+        file.add(menuItem);
+        menuItem = new JMenuItem("Save histograms to file...", KeyEvent.VK_S);
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
+        menuItem.getAccessibleContext().setAccessibleDescription("Save histograms to file");
+        menuItem.addActionListener(this);
+        file.add(menuItem);
+         menuBar.add(file);
+        JMenu settings = new JMenu("Settings");
         settings.setMnemonic(KeyEvent.VK_A);
         settings.getAccessibleContext().setAccessibleDescription("Choose monitoring parameters");
         menuItem = new JMenuItem("Set GUI update interval...", KeyEvent.VK_T);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_1, ActionEvent.ALT_MASK));
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.CTRL_MASK));
         menuItem.getAccessibleContext().setAccessibleDescription("Set GUI update interval");
         menuItem.addActionListener(this);
         settings.add(menuItem);
         menuBar.add(settings);
-        JMenu save = new JMenu("Save");
-        save.setMnemonic(KeyEvent.VK_A);
-        save.getAccessibleContext().setAccessibleDescription("Choose monitoring parameters");
-        menuItem = new JMenuItem("Save histograms to file", KeyEvent.VK_T);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK));
-        menuItem.getAccessibleContext().setAccessibleDescription("Save histograms to file");
-        menuItem.addActionListener(this);
-        save.add(menuItem);
-        menuBar.add(save);
-        
+         
            
         // create main panel
         mainPanel = new JPanel();	
@@ -120,14 +126,18 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
       	tabbedpane 	= new JTabbedPane();
 
         processorPane = new DataSourceProcessorPane();
-        processorPane.setUpdateRate(100);
+        processorPane.setUpdateRate(10);
 
         mainPanel.add(tabbedpane);
         mainPanel.add(processorPane,BorderLayout.PAGE_END);
         
     
+        GStyle.getAxisAttributesX().setTitleFontSize(18);
+        GStyle.getAxisAttributesX().setLabelFontSize(14);
+        GStyle.getAxisAttributesY().setTitleFontSize(18);
+        GStyle.getAxisAttributesY().setLabelFontSize(14);
         CLAS12Canvas    = new EmbeddedCanvasTabbed("CLAS12");
-        CLAS12Canvas.getCanvas("CLAS12").divide(3,4);
+        CLAS12Canvas.getCanvas("CLAS12").divide(3,3);
         CLAS12Canvas.getCanvas("CLAS12").setGridX(false);
         CLAS12Canvas.getCanvas("CLAS12").setGridY(false);
         JPanel    CLAS12View = new JPanel(new BorderLayout());
@@ -135,7 +145,7 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         splitPanel.setLeftComponent(CLAS12View);
         splitPanel.setRightComponent(CLAS12Canvas);
         JTextPane clas12Text   = new JTextPane();
-        clas12Text.setText("CLAS12\n monitoring plots\n V1.0");
+        clas12Text.setText("CLAS12\n monitoring plots\n V1.0\n");
         clas12Text.setEditable(false);
         StyledDocument styledDoc = clas12Text.getStyledDocument();
         SimpleAttributeSet center = new SimpleAttributeSet();
@@ -167,8 +177,31 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         if(e.getActionCommand()=="Set GUI update interval...") {
             this.chooseUpdateInterval();
         }
-        if(e.getActionCommand()=="Save histograms to file") {
-            this.saveToFile();
+        if(e.getActionCommand()=="Open histograms file...") {
+            String fileName = null;
+            JFileChooser fc = new JFileChooser();
+            File workingDirectory = new File(System.getProperty("user.dir"));
+            fc.setCurrentDirectory(workingDirectory);
+            fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+            int option = fc.showOpenDialog(null);
+            if (option == JFileChooser.APPROVE_OPTION) {
+                fileName = fc.getSelectedFile().getAbsolutePath();            
+            }
+            if(fileName != null) this.loadHistosFromFile(fileName);
+        }        
+        if(e.getActionCommand()=="Print histograms to file...") {
+            this.printHistosToFile();
+        }
+        if(e.getActionCommand()=="Save histograms to file...") {
+            String fileName = "histo.hipo";
+            JFileChooser fc = new JFileChooser();
+            File workingDirectory = new File(System.getProperty("user.dir"));
+            fc.setCurrentDirectory(workingDirectory);
+            int returnValue = fc.showSaveDialog(null);
+            if (returnValue == JFileChooser.APPROVE_OPTION) {
+               fileName = fc.getSelectedFile().getAbsolutePath();            
+            }
+            this.saveHistosToFile(fileName);
         }
     }
 
@@ -197,10 +230,6 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         }
     }
         
-    public JPanel  getPanel(){
-        return mainPanel;
-    }
-
     private JLabel getImage(String path,double scale) {
         JLabel label = null;
         Image image = null;
@@ -219,6 +248,19 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         return label;
     }
     
+    private int getRunNumber(DataEvent event) {
+        int rNum = this.runNumber;
+        DataBank bank = event.getBank("RUN::config");
+        if(bank!=null) {
+            rNum = bank.getInt("run", 0);
+        }
+        return rNum;
+    }
+    
+    public JPanel  getPanel(){
+        return mainPanel;
+    }
+
     @Override
     public void dataEventAction(DataEvent event) {
     	
@@ -230,8 +272,13 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
 //            event.show();
 
             if (event.getType() == DataEventType.EVENT_START) {
+                this.runNumber = this.getRunNumber(event);
                 resetEventListener();
-                this.plotSummaries();
+            }
+            if(this.runNumber != this.getRunNumber(event)) {
+//                this.saveToFile("mon12_histo_run_" + runNumber + ".hipo");
+                this.runNumber = this.getRunNumber(event);
+                resetEventListener();
             }
             if(event instanceof EvioDataEvent){
         	hipo = (HipoDataEvent) clasDecoder.getDataEvent(event);
@@ -240,37 +287,76 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
                 hipo = (HipoDataEvent) event;
                 
             }
+
             for(int k=0; k<this.monitors.length; k++) {
                 this.monitors[k].dataEventAction(hipo);
             }      
 	}
-   }
+    }
+
+    public void loadHistosFromFile(String fileName) {
+        // TXT table summary FILE //
+        System.out.println("Opening file: " + fileName);
+        TDirectory dir = new TDirectory();
+        dir.readFile(fileName);
+        System.out.println(dir.getDirectoryList());
+        dir.cd();
+        dir.pwd();
+        
+        for(int k=0; k<this.monitors.length; k++) {
+            this.monitors[k].readDataGroup(dir);
+        }
+        this.plotSummaries();
+    }
 
     public void plotSummaries() {
         this.CLAS12Canvas.getCanvas("CLAS12").cd(0);
         if(this.monitors[0].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[0].getDetectorSummary().getH1F("summary"));
+//        this.CLAS12Canvas.getCanvas("CLAS12").cd(1);
+//        if(this.monitors[1].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[1].getDetectorSummary().getH1F("sumHBT"));
+//        this.CLAS12Canvas.getCanvas("CLAS12").cd(2);
+//        if(this.monitors[1].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[1].getDetectorSummary().getH1F("sumTBT"));
         this.CLAS12Canvas.getCanvas("CLAS12").cd(1);
-        if(this.monitors[1].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[1].getDetectorSummary().getH1F("sumHBT"));
+        if(this.monitors[1].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[1].getDetectorSummary().getH1F("summary"));
         this.CLAS12Canvas.getCanvas("CLAS12").cd(2);
-        if(this.monitors[1].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[1].getDetectorSummary().getH1F("sumTBT"));
+        if(this.monitors[2].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[2].getDetectorSummary().getH1F("summary"));       
         this.CLAS12Canvas.getCanvas("CLAS12").cd(3);
-        if(this.monitors[2].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[2].getDetectorSummary().getH1F("sumP1A"));
+        if(this.monitors[3].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[3].getDetectorSummary().getH1F("sumP1A"));
         this.CLAS12Canvas.getCanvas("CLAS12").cd(4);
-        if(this.monitors[2].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[2].getDetectorSummary().getH1F("sumP1B"));
+        if(this.monitors[3].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[3].getDetectorSummary().getH1F("sumP1B"));
         this.CLAS12Canvas.getCanvas("CLAS12").cd(5);
-        if(this.monitors[2].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[2].getDetectorSummary().getH1F("sumP2"));
+        if(this.monitors[3].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[3].getDetectorSummary().getH1F("sumP2"));
         this.CLAS12Canvas.getCanvas("CLAS12").cd(6);
-        if(this.monitors[5].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[5].getDetectorSummary().getH1F("sumECin"));
+        if(this.monitors[4].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[4].getDetectorSummary().getH1F("sumECin"));
         this.CLAS12Canvas.getCanvas("CLAS12").cd(7);
-        if(this.monitors[5].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[5].getDetectorSummary().getH1F("sumECout"));
+        if(this.monitors[4].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[4].getDetectorSummary().getH1F("sumECout"));
         this.CLAS12Canvas.getCanvas("CLAS12").cd(8);
-        if(this.monitors[5].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[5].getDetectorSummary().getH1F("sumPCAL"));
-        this.CLAS12Canvas.getCanvas("CLAS12").cd(9);
-        if(this.monitors[3].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[3].getDetectorSummary().getH1F("summary"));
-        this.CLAS12Canvas.getCanvas("CLAS12").cd(10);
-        if(this.monitors[4].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[4].getDetectorSummary().getH1F("summary"));       
+        if(this.monitors[4].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[4].getDetectorSummary().getH1F("sumPCAL"));
     }
     
+    public void printHistosToFile() {
+        DateFormat df = new SimpleDateFormat("MM-dd-yyyy_hh.mm.ss_aa");
+        String data = "mon12_" + df.format(new Date());        
+        File theDir = new File(data);
+        // if the directory does not exist, create it
+        if (!theDir.exists()) {
+            boolean result = false;
+            try{
+                theDir.mkdir();
+                result = true;
+            } 
+            catch(SecurityException se){
+                //handle it
+            }        
+            if(result) {    
+            System.out.println("Created directory: " + data);
+            }
+        }
+        for(int k=0; k<this.monitors.length; k++) {
+            this.monitors[k].printCanvas(data);
+        }
+    }
+
     public void setCanvasUpdate(int time) {
         System.out.println("Setting " + time + " ms update interval");
         this.updateTime = time;
@@ -298,40 +384,16 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         this.plotSummaries();
     }
     
-    public void saveToFile() {
+    public void saveHistosToFile(String fileName) {
         // TXT table summary FILE //
-        String fileName = "histo.hipo";
-        JFileChooser fc = new JFileChooser();
-        fc.setCurrentDirectory(new File(fileName));
-	int returnValue = fc.showSaveDialog(null);
-        if (returnValue == JFileChooser.APPROVE_OPTION) {
-            fileName = fc.getSelectedFile().getAbsolutePath();            
-        }
         TDirectory dir = new TDirectory();
         for(int k=0; k<this.monitors.length; k++) {
-            String folder = "/" + this.monitors[k].getDetectorName();
-            dir.mkdir(folder);
-            dir.cd(folder);
-            System.out.println("Writing to folder " + folder);
-            Map<Long, DataGroup> map = this.monitors[k].getDataGroup().getMap();
-            for( Map.Entry<Long, DataGroup> entry : map.entrySet()) {
-                DataGroup group = entry.getValue();
-                int nrows = group.getRows();
-                int ncols = group.getColumns();
-                int nds   = nrows*ncols;
-                for(int i = 0; i < nds; i++){
-                    List<IDataSet> dsList = group.getData(i);
-                    for(IDataSet ds : dsList){
-                        System.out.println("\t --> " + ds.getName());
-                        dir.addDataSet(ds);
-                    }
-                }
-            }
+            this.monitors[k].writeDataGroup(dir);
         }
         System.out.println("Saving histograms to file " + fileName);
         dir.writeFile(fileName);
     }
-    
+        
     public void stateChanged(ChangeEvent e) {
         this.timerUpdate();
     }
@@ -342,13 +404,13 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
     }
     
     public static void main(String[] args){
-        JFrame frame = new JFrame();
+        JFrame frame = new JFrame("MON12");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         EventViewer viewer = new EventViewer();
         //frame.add(viewer.getPanel());
         frame.add(viewer.mainPanel);
         frame.setJMenuBar(viewer.menuBar);
-        frame.setSize(900, 600);
+        frame.setSize(1400, 800);
         frame.setVisible(true);
     }
    

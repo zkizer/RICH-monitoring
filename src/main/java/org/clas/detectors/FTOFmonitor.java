@@ -12,7 +12,6 @@ import org.jlab.detector.base.DetectorType;
 import org.jlab.detector.view.DetectorShape2D;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
-import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 import org.jlab.groot.group.DataGroup;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
@@ -30,8 +29,7 @@ public class FTOFmonitor  extends DetectorMonitor {
     public FTOFmonitor(String name) {
         super(name);
         
-        EmbeddedCanvasTabbed canvas = new EmbeddedCanvasTabbed("Occupancies");
-        this.setDetectorCanvas(canvas);
+        this.setDetectorTabNames("ADC Occupancies", "TDC Occupancies");
         this.init();
     }
 
@@ -39,9 +37,13 @@ public class FTOFmonitor  extends DetectorMonitor {
     public void createHistos() {
         // initialize canvas and create histograms
         this.setNumberOfEvents(0);
-        this.getDetectorCanvas().getCanvas("Occupancies").divide(2, 3);
-        this.getDetectorCanvas().getCanvas("Occupancies").setGridX(false);
-        this.getDetectorCanvas().getCanvas("Occupancies").setGridY(false);
+        this.getDetectorCanvas().getCanvas("ADC Occupancies").divide(2, 3);
+        this.getDetectorCanvas().getCanvas("ADC Occupancies").setGridX(false);
+        this.getDetectorCanvas().getCanvas("ADC Occupancies").setGridY(false);
+        this.setNumberOfEvents(0);
+        this.getDetectorCanvas().getCanvas("TDC Occupancies").divide(2, 3);
+        this.getDetectorCanvas().getCanvas("TDC Occupancies").setGridX(false);
+        this.getDetectorCanvas().getCanvas("TDC Occupancies").setGridY(false);
         H1F sumP1A = new H1F("sumP1A","sumP1A",6,1,7);
         sumP1A.setTitleX("sector");
         sumP1A.setTitleY("FTOF P1A hits");
@@ -60,29 +62,30 @@ public class FTOFmonitor  extends DetectorMonitor {
         sum.addDataSet(sumP2,  2);
         this.setDetectorSummary(sum);
         for(int layer=1; layer <= 3; layer++) {
-            H2F occL = new H2F("occL_lay"+layer, "layer " + layer + " Occupancy", this.npaddles[layer-1], 1, npaddles[layer-1]+1, 6, 1, 7);
-            occL.setTitleX("paddle");
-            occL.setTitleY("sector");
-            occL.setTitle("Left PMTs");
-            H2F occR = new H2F("occR_lay"+layer, "layer " + layer + " Occupancy", this.npaddles[layer-1], 1, npaddles[layer-1]+1, 6, 1, 7);
-            occR.setTitleX("paddle");
-            occR.setTitleY("sector");
-            occR.setTitle("Right PMTs");
+            H2F occADCL = new H2F("occADCL_lay"+layer, "layer " + layer + " Occupancy", this.npaddles[layer-1], 1, npaddles[layer-1]+1, 6, 1, 7);
+            occADCL.setTitleX("paddle");
+            occADCL.setTitleY("sector");
+            occADCL.setTitle("Left PMTs");
+            H2F occADCR = new H2F("occADCR_lay"+layer, "layer " + layer + " Occupancy", this.npaddles[layer-1], 1, npaddles[layer-1]+1, 6, 1, 7);
+            occADCR.setTitleX("paddle");
+            occADCR.setTitleY("sector");
+            occADCR.setTitle("Right PMTs");
+            H2F occTDCL = new H2F("occTDCL_lay"+layer, "layer " + layer + " Occupancy", this.npaddles[layer-1], 1, npaddles[layer-1]+1, 6, 1, 7);
+            occTDCL.setTitleX("paddle");
+            occTDCL.setTitleY("sector");
+            occTDCL.setTitle("Left PMTs");
+            H2F occTDCR = new H2F("occTDCR_lay"+layer, "layer " + layer + " Occupancy", this.npaddles[layer-1], 1, npaddles[layer-1]+1, 6, 1, 7);
+            occTDCR.setTitleX("paddle");
+            occTDCR.setTitleY("sector");
+            occTDCR.setTitle("Right PMTs");
            
-            DataGroup dg = new DataGroup(2,1);
-            dg.addDataSet(occL, 0);
-            dg.addDataSet(occR, 1);
+            DataGroup dg = new DataGroup(2,2);
+            dg.addDataSet(occADCL, 0);
+            dg.addDataSet(occADCR, 1);
+            dg.addDataSet(occTDCL, 2);
+            dg.addDataSet(occTDCR, 3);
             this.getDataGroup().add(dg,0,layer,0);
         }
-        for(int layer=1; layer <=3; layer++) {
-            this.getDetectorCanvas().getCanvas("Occupancies").cd((layer-1)*2+0);
-            this.getDetectorCanvas().getCanvas("Occupancies").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occL_lay"+layer));
-            this.getDetectorCanvas().getCanvas("Occupancies").cd((layer-1)*2+1);
-            this.getDetectorCanvas().getCanvas("Occupancies").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occR_lay"+layer));
-        }
-        this.getDetectorCanvas().getCanvas("Occupancies").update();
-        this.getDetectorView().getView().repaint();
-        this.getDetectorView().update();
     }
 
     public void drawDetector() {
@@ -120,8 +123,27 @@ public class FTOFmonitor  extends DetectorMonitor {
         splitPane.setRightComponent(this.getDetectorCanvas());
         this.getDetectorPanel().add(splitPane,BorderLayout.CENTER);
         this.createHistos();
+        this.plotHistos();
     }
         
+    @Override
+    public void plotHistos() {
+        for(int layer=1; layer <=3; layer++) {
+            this.getDetectorCanvas().getCanvas("ADC Occupancies").cd((layer-1)*2+0);
+            this.getDetectorCanvas().getCanvas("ADC Occupancies").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occADCL_lay"+layer));
+            this.getDetectorCanvas().getCanvas("ADC Occupancies").cd((layer-1)*2+1);
+            this.getDetectorCanvas().getCanvas("ADC Occupancies").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occADCR_lay"+layer));
+            this.getDetectorCanvas().getCanvas("TDC Occupancies").cd((layer-1)*2+0);
+            this.getDetectorCanvas().getCanvas("TDC Occupancies").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occTDCL_lay"+layer));
+            this.getDetectorCanvas().getCanvas("TDC Occupancies").cd((layer-1)*2+1);
+            this.getDetectorCanvas().getCanvas("TDC Occupancies").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occTDCR_lay"+layer));
+        }
+        this.getDetectorCanvas().getCanvas("ADC Occupancies").update();
+        this.getDetectorCanvas().getCanvas("TDC Occupancies").update();
+        this.getDetectorView().getView().repaint();
+        this.getDetectorView().update();
+    }
+
     @Override
     public void processEvent(DataEvent event) {
         // process event info and save into data group
@@ -138,8 +160,27 @@ public class FTOFmonitor  extends DetectorMonitor {
 //                           System.out.println("ROW " + i + " SECTOR = " + sector
 //                                 + " LAYER = " + layer + " PADDLE = "
 //                                 + paddle + " ADC = " + ADC);    
-                if(ADC>0 && order==0) this.getDataGroup().getItem(0,layer,0).getH2F("occL_lay"+layer).fill(paddle*1.0,sector*1.0);
-                if(ADC>0 && order==1) this.getDataGroup().getItem(0,layer,0).getH2F("occR_lay"+layer).fill(paddle*1.0,sector*1.0);
+                if(ADC>0 && order==0) this.getDataGroup().getItem(0,layer,0).getH2F("occADCL_lay"+layer).fill(paddle*1.0,sector*1.0);
+                if(ADC>0 && order==1) this.getDataGroup().getItem(0,layer,0).getH2F("occADCR_lay"+layer).fill(paddle*1.0,sector*1.0);
+                if(layer==1)      this.getDetectorSummary().getH1F("sumP1A").fill(sector*1.0);
+                else if (layer==2)this.getDetectorSummary().getH1F("sumP1B").fill(sector*1.0);
+                else              this.getDetectorSummary().getH1F("sumP2").fill(sector*1.0);
+            }
+        }
+        if(event.hasBank("FTOF::tdc")==true){
+            DataBank  bank = event.getBank("FTOF::tdc");
+            int rows = bank.rows();
+            for(int i = 0; i < rows; i++){
+                int    sector = bank.getByte("sector",i);
+                int     layer = bank.getByte("layer",i);
+                int    paddle = bank.getShort("component",i);
+                int       TDC = bank.getInt("TDC",i);
+                int     order = bank.getByte("order",i); // order specifies left-right for ADC
+//                           System.out.println("ROW " + i + " SECTOR = " + sector
+//                                 + " LAYER = " + layer + " PADDLE = "
+//                                 + paddle + " TDC = " + TDC);    
+                if(TDC>0 && order==2) this.getDataGroup().getItem(0,layer,0).getH2F("occTDCL_lay"+layer).fill(paddle*1.0,sector*1.0);
+                if(TDC>0 && order==3) this.getDataGroup().getItem(0,layer,0).getH2F("occTDCR_lay"+layer).fill(paddle*1.0,sector*1.0);
                 if(layer==1)      this.getDetectorSummary().getH1F("sumP1A").fill(sector*1.0);
                 else if (layer==2)this.getDetectorSummary().getH1F("sumP1B").fill(sector*1.0);
                 else              this.getDetectorSummary().getH1F("sumP2").fill(sector*1.0);
@@ -151,6 +192,7 @@ public class FTOFmonitor  extends DetectorMonitor {
     public void resetEventListener() {
         System.out.println("Resetting FTOF histogram");
         this.createHistos();
+        this.plotHistos();
     }
 
     @Override
