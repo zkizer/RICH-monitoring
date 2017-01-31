@@ -5,15 +5,12 @@
  */
 package org.clas.detectors;
 
-import java.awt.BorderLayout;
-import javax.swing.JSplitPane;
 import org.clas.viewer.DetectorMonitor;
 import org.jlab.detector.base.DetectorType;
 import org.jlab.detector.view.DetectorShape2D;
 import org.jlab.geom.prim.Point3D;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
-import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 import org.jlab.groot.group.DataGroup;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
@@ -41,9 +38,8 @@ public class TRKmonitor extends DetectorMonitor {
         super(name);
         
         // initializa monitoring panel
-        EmbeddedCanvasTabbed canvas = new EmbeddedCanvasTabbed("Tracking Statistics");
-        this.setDetectorCanvas(canvas);
-        this.init();
+        this.setDetectorTabNames("Tracking Statistics");
+        this.init(true);
         
         // initialize reconstruction engines
         enHead.init();	
@@ -108,28 +104,9 @@ public class TRKmonitor extends DetectorMonitor {
         dg.addDataSet(numberOfClustersTBT, 5);
         dg.addDataSet(numberOfCrossesTBT, 7);
         this.getDataGroup().add(dg, 0,0,0);
-        
-        // plot histos
-        this.getDetectorCanvas().getCanvas("Tracking Statistics").cd(0);
-        this.getDetectorCanvas().getCanvas("Tracking Statistics").draw(this.getDataGroup().getItem(0,0,0).getH2F("clusterSizeHBT"));
-        this.getDetectorCanvas().getCanvas("Tracking Statistics").cd(2);
-        this.getDetectorCanvas().getCanvas("Tracking Statistics").draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfHitsHBT"));
-        this.getDetectorCanvas().getCanvas("Tracking Statistics").cd(4);
-        this.getDetectorCanvas().getCanvas("Tracking Statistics").draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfClustersHBT"));
-        this.getDetectorCanvas().getCanvas("Tracking Statistics").cd(6);
-        this.getDetectorCanvas().getCanvas("Tracking Statistics").draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfCrossesHBT"));
-        this.getDetectorCanvas().getCanvas("Tracking Statistics").cd(1);
-        this.getDetectorCanvas().getCanvas("Tracking Statistics").draw(this.getDataGroup().getItem(0,0,0).getH2F("clusterSizeTBT"));
-        this.getDetectorCanvas().getCanvas("Tracking Statistics").cd(3);
-        this.getDetectorCanvas().getCanvas("Tracking Statistics").draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfHitsTBT"));
-        this.getDetectorCanvas().getCanvas("Tracking Statistics").cd(5);
-        this.getDetectorCanvas().getCanvas("Tracking Statistics").draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfClustersTBT"));
-        this.getDetectorCanvas().getCanvas("Tracking Statistics").cd(7);
-        this.getDetectorCanvas().getCanvas("Tracking Statistics").draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfCrossesTBT"));
-        this.getDetectorCanvas().getCanvas("Tracking Statistics").update();
-
     }
 
+    @Override
     public void drawDetector() {
         // Load the Constants
         Constants.Load(true, true, 0);
@@ -168,17 +145,6 @@ public class TRKmonitor extends DetectorMonitor {
         //detectorViewDC.updateBox();
     }
 
-    @Override
-    public void init() {
-        this.getDetectorPanel().setLayout(new BorderLayout());
-        this.drawDetector();
-        JSplitPane   splitPane = new JSplitPane();
-        splitPane.setLeftComponent(this.getDetectorView());
-        splitPane.setRightComponent(this.getDetectorCanvas());
-        this.getDetectorPanel().add(splitPane,BorderLayout.CENTER);  
-        this.createHistos();
-    }
-        
     public void PlotCrosses(DataEvent event){
     		
         if(event.hasBank("HitBasedTrkg::HBCrosses")==true){
@@ -225,12 +191,33 @@ public class TRKmonitor extends DetectorMonitor {
     }    
     
     @Override
+    public void plotHistos() {
+        // initialize canvas and plot histograms
+        this.getDetectorCanvas().getCanvas("Tracking Statistics").cd(0);
+        this.getDetectorCanvas().getCanvas("Tracking Statistics").draw(this.getDataGroup().getItem(0,0,0).getH2F("clusterSizeHBT"));
+        this.getDetectorCanvas().getCanvas("Tracking Statistics").cd(2);
+        this.getDetectorCanvas().getCanvas("Tracking Statistics").draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfHitsHBT"));
+        this.getDetectorCanvas().getCanvas("Tracking Statistics").cd(4);
+        this.getDetectorCanvas().getCanvas("Tracking Statistics").draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfClustersHBT"));
+        this.getDetectorCanvas().getCanvas("Tracking Statistics").cd(6);
+        this.getDetectorCanvas().getCanvas("Tracking Statistics").draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfCrossesHBT"));
+        this.getDetectorCanvas().getCanvas("Tracking Statistics").cd(1);
+        this.getDetectorCanvas().getCanvas("Tracking Statistics").draw(this.getDataGroup().getItem(0,0,0).getH2F("clusterSizeTBT"));
+        this.getDetectorCanvas().getCanvas("Tracking Statistics").cd(3);
+        this.getDetectorCanvas().getCanvas("Tracking Statistics").draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfHitsTBT"));
+        this.getDetectorCanvas().getCanvas("Tracking Statistics").cd(5);
+        this.getDetectorCanvas().getCanvas("Tracking Statistics").draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfClustersTBT"));
+        this.getDetectorCanvas().getCanvas("Tracking Statistics").cd(7);
+        this.getDetectorCanvas().getCanvas("Tracking Statistics").draw(this.getDataGroup().getItem(0,0,0).getH2F("numberOfCrossesTBT"));
+        this.getDetectorCanvas().getCanvas("Tracking Statistics").update();        
+    }
+    
+    @Override
     public void plotEvent(DataEvent event) {
         this.PlotCrosses(event);
         this.getDetectorView().update();
 
     }
-
     
     @Override
     public void processEvent(DataEvent event) {
@@ -315,12 +302,6 @@ public class TRKmonitor extends DetectorMonitor {
 	    }
             for(int sector=1; sector<=6; sector++) if(nCrosses[sector-1]>0) this.getDataGroup().getItem(0,0,0).getH2F("numberOfCrossesTBT").fill(nCrosses[sector-1],sector);
 	}       
-    }
-
-    @Override
-    public void resetEventListener() {
-        System.out.println("Resetting TRK histogram");
-        this.createHistos();
     }
 
     @Override

@@ -5,8 +5,6 @@
  */
 package org.clas.detectors;
 
-import java.awt.BorderLayout;
-import javax.swing.JSplitPane;
 import org.clas.viewer.DetectorMonitor;
 import org.jlab.detector.base.DetectorType;
 import org.jlab.detector.view.DetectorShape2D;
@@ -30,7 +28,7 @@ public class FTOFmonitor  extends DetectorMonitor {
         super(name);
         
         this.setDetectorTabNames("ADC Occupancies", "TDC Occupancies");
-        this.init();
+        this.init(true);
     }
 
     @Override
@@ -88,6 +86,7 @@ public class FTOFmonitor  extends DetectorMonitor {
         }
     }
 
+    @Override
     public void drawDetector() {
         double FTOFSize = 500.0;
         int[]     widths   = new int[]{6,15,25};
@@ -112,18 +111,6 @@ public class FTOFmonitor  extends DetectorMonitor {
         }
         this.getDetectorView().setName("FTOF");
         this.getDetectorView().updateBox();
-    }
-
-    @Override
-    public void init() {
-        this.getDetectorPanel().setLayout(new BorderLayout());
-        this.drawDetector();
-        JSplitPane   splitPane = new JSplitPane();
-        splitPane.setLeftComponent(this.getDetectorView());
-        splitPane.setRightComponent(this.getDetectorCanvas());
-        this.getDetectorPanel().add(splitPane,BorderLayout.CENTER);
-        this.createHistos();
-        this.plotHistos();
     }
         
     @Override
@@ -186,13 +173,6 @@ public class FTOFmonitor  extends DetectorMonitor {
                 else              this.getDetectorSummary().getH1F("sumP2").fill(sector*1.0);
             }
         }
-    }
-
-    @Override
-    public void resetEventListener() {
-        System.out.println("Resetting FTOF histogram");
-        this.createHistos();
-        this.plotHistos();
     }
 
     @Override

@@ -5,10 +5,12 @@
  */
 package org.clas.viewer;
 
+import java.awt.BorderLayout;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 import org.jlab.detector.base.DetectorOccupancy;
 import org.jlab.detector.view.DetectorPane2D;
 import org.jlab.groot.base.GStyle;
@@ -75,6 +77,10 @@ public class DetectorMonitor implements IDataEventListener {
 	}
     }
 
+    public void drawDetector() {
+    
+    }
+    
     public EmbeddedCanvasTabbed getDetectorCanvas() {
         return detectorCanvas;
     }
@@ -111,8 +117,22 @@ public class DetectorMonitor implements IDataEventListener {
         return numberOfEvents;
     }
 
-    public void init() {
+    public void init(boolean flagDetectorView) {
         // initialize monitoring application
+        // detector view is shown if flag is true
+        getDetectorPanel().setLayout(new BorderLayout());
+        drawDetector();
+        JSplitPane   splitPane = new JSplitPane();
+        splitPane.setLeftComponent(getDetectorView());
+        splitPane.setRightComponent(getDetectorCanvas());
+        if(flagDetectorView) {
+            getDetectorPanel().add(splitPane,BorderLayout.CENTER);  
+        }
+        else {
+            getDetectorPanel().add(getDetectorCanvas(),BorderLayout.CENTER);  
+        }
+        createHistos();
+        plotHistos();
     }
     
     public void processEvent(DataEvent event) {
@@ -138,7 +158,9 @@ public class DetectorMonitor implements IDataEventListener {
     
     @Override
     public void resetEventListener() {
-        
+        System.out.println("Resetting " + this.getDetectorName() + " histogram");
+        this.createHistos();
+        this.plotHistos();
     }
     
     public void setCanvasUpdate(int time) {

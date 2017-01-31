@@ -5,7 +5,6 @@
  */
 package org.clas.detectors;
 
-import java.awt.BorderLayout;
 import org.clas.viewer.DetectorMonitor;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
@@ -23,7 +22,7 @@ public class LTCCmonitor  extends DetectorMonitor {
         super(name);
 
         this.setDetectorTabNames("Occupancies and Spectra");
-        this.init();
+        this.init(false);
     }
 
     @Override
@@ -75,24 +74,7 @@ public class LTCCmonitor  extends DetectorMonitor {
         dg.addDataSet(adcR, 4);
         this.getDataGroup().add(dg,0,0,0);
     }
-
-    public void drawDetector() {
-        this.getDetectorView().setName("LTCC");
-        this.getDetectorView().updateBox();
-    }
-
-    @Override
-    public void init() {
-        this.getDetectorPanel().setLayout(new BorderLayout());
-//        this.drawDetector();
-//        JSplitPane   splitPane = new JSplitPane();
-//        splitPane.setLeftComponent(this.getDetectorView());
-//        splitPane.setRightComponent(this.getDetectorCanvas());
-        this.getDetectorPanel().add(this.getDetectorCanvas(),BorderLayout.CENTER);
-        this.createHistos();
-        this.plotHistos();
-    }
-        
+ 
     @Override
     public void plotHistos() {        
         // plotting histos
@@ -139,13 +121,6 @@ public class LTCCmonitor  extends DetectorMonitor {
                 this.getDetectorSummary().getH1F("summary").fill(sector*1.0);
 	    }
     	}
-    }
-
-    @Override
-    public void resetEventListener() {
-        System.out.println("Resetting LTCC histogram");
-        this.createHistos();
-        this.plotHistos();
     }
 
     @Override

@@ -5,14 +5,9 @@
  */
 package org.clas.detectors;
 
-import java.awt.BorderLayout;
-import javax.swing.JSplitPane;
 import org.clas.viewer.DetectorMonitor;
-import org.jlab.detector.base.DetectorType;
-import org.jlab.detector.view.DetectorShape2D;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
-import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 import org.jlab.groot.group.DataGroup;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
@@ -29,17 +24,20 @@ public class ECmonitor  extends DetectorMonitor {
     public ECmonitor(String name) {
         super(name);
 
-        this.setDetectorTabNames("Occupancies");
-        this.init();
+        this.setDetectorTabNames("ADC Occupancies","TDC Occupancies");
+        this.init(false);
     }
 
     @Override
     public void createHistos() {
         // initialize canvas and create histograms
         this.setNumberOfEvents(0);
-        this.getDetectorCanvas().getCanvas("Occupancies").divide(3, 3);
-        this.getDetectorCanvas().getCanvas("Occupancies").setGridX(false);
-        this.getDetectorCanvas().getCanvas("Occupancies").setGridY(false);
+        this.getDetectorCanvas().getCanvas("ADC Occupancies").divide(3, 3);
+        this.getDetectorCanvas().getCanvas("ADC Occupancies").setGridX(false);
+        this.getDetectorCanvas().getCanvas("ADC Occupancies").setGridY(false);
+        this.getDetectorCanvas().getCanvas("TDC Occupancies").divide(3, 3);
+        this.getDetectorCanvas().getCanvas("TDC Occupancies").setGridX(false);
+        this.getDetectorCanvas().getCanvas("TDC Occupancies").setGridY(false);
         String[] stacks = new String[]{"PCAL","ECin","ECout"};
         String[] views = new String[]{"u","v","w"};
         DataGroup sum = new DataGroup(3,1);
@@ -55,42 +53,29 @@ public class ECmonitor  extends DetectorMonitor {
         for(int layer=1; layer <= 9; layer++) {
             int stack = (int) ((layer-1)/3) + 1;
             int view  = layer - (stack-1)*3;
-            H2F occ = new H2F("occ_lay"+layer, "layer " + layer + " Occupancy", this.npaddles[layer-1], 1, npaddles[layer-1]+1, 6, 1, 7);
-            occ.setTitleX(stacks[stack-1] + " " + views[view-1] + " strip");
-            occ.setTitleY("sector");
-            DataGroup dg = new DataGroup(2,1);
-            dg.addDataSet(occ, 0);
+            H2F occADC = new H2F("occADC_lay"+layer, "layer " + layer + " Occupancy", this.npaddles[layer-1], 1, npaddles[layer-1]+1, 6, 1, 7);
+            occADC.setTitleX(stacks[stack-1] + " " + views[view-1] + " strip");
+            occADC.setTitleY("sector");
+            H2F occTDC = new H2F("occTDC_lay"+layer, "layer " + layer + " Occupancy", this.npaddles[layer-1], 1, npaddles[layer-1]+1, 6, 1, 7);
+            occTDC.setTitleX(stacks[stack-1] + " " + views[view-1] + " strip");
+            occTDC.setTitleY("sector");
+            DataGroup dg = new DataGroup(2,2);
+            dg.addDataSet(occADC, 0);
+            dg.addDataSet(occTDC, 0);
             this.getDataGroup().add(dg,0,layer,0);
         }
-    }
-
-    public void drawDetector() {
-        this.getDetectorView().setName("EC");
-        this.getDetectorView().updateBox();
-    }
-
-    @Override
-    public void init() {
-        this.getDetectorPanel().setLayout(new BorderLayout());
-        this.drawDetector();
-        JSplitPane   splitPane = new JSplitPane();
-        splitPane.setLeftComponent(this.getDetectorView());
-        splitPane.setRightComponent(this.getDetectorCanvas());
-        this.getDetectorPanel().add(this.getDetectorCanvas(),BorderLayout.CENTER); 
-        this.createHistos();
-        this.plotHistos();
     }
         
     @Override
     public void plotHistos() {        
         // plotting histos
         for(int layer=1; layer <=9; layer++) {
-            this.getDetectorCanvas().getCanvas("Occupancies").cd((layer-1)+0);
-            this.getDetectorCanvas().getCanvas("Occupancies").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occ_lay"+layer));
+            this.getDetectorCanvas().getCanvas("ADC Occupancies").cd((layer-1)+0);
+            this.getDetectorCanvas().getCanvas("ADC Occupancies").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occADC_lay"+layer));
+            this.getDetectorCanvas().getCanvas("TDC Occupancies").cd((layer-1)+0);
+            this.getDetectorCanvas().getCanvas("TDC Occupancies").draw(this.getDataGroup().getItem(0,layer,0).getH2F("occTDC_lay"+layer));
         }
-        this.getDetectorCanvas().getCanvas("Occupancies").update();
-        this.getDetectorView().getView().repaint();
-        this.getDetectorView().update();
+        this.getDetectorCanvas().getCanvas("ADC Occupancies").update();
     }
 
     @Override
@@ -106,13 +91,31 @@ public class ECmonitor  extends DetectorMonitor {
                 int adc    = bank.getInt("ADC", loop);
                 float time = bank.getFloat("time",loop);
 //                System.out.println(sector + " " + layer + " " + comp + " " + adc + " " + time);
-                if(adc>0 && time>=0) this.getDataGroup().getItem(0,layer,0).getH2F("occ_lay"+layer).fill(comp*1.0,sector*1.0);
+                if(adc>0 && time>=0) this.getDataGroup().getItem(0,layer,0).getH2F("occADC_lay"+layer).fill(comp*1.0,sector*1.0);
                 if(layer==1)      this.getDetectorSummary().getH1F("sumPCAL").fill(sector*1.0);
                 else if(layer==2) this.getDetectorSummary().getH1F("sumECin").fill(sector*1.0);
                 else              this.getDetectorSummary().getH1F("sumECout").fill(sector*1.0);
 
 	    }
     	}        
+        if(event.hasBank("ECAL::tdc")==true){
+            DataBank  bank = event.getBank("ECAL::tdc");
+            int rows = bank.rows();
+            for(int i = 0; i < rows; i++){
+                int    sector = bank.getByte("sector",i);
+                int     layer = bank.getByte("layer",i);
+                int    paddle = bank.getShort("component",i);
+                int       TDC = bank.getInt("TDC",i);
+                int     order = bank.getByte("order",i); // order specifies left-right for ADC
+//                           System.out.println("ROW " + i + " SECTOR = " + sector
+//                                 + " LAYER = " + layer + " PADDLE = "
+//                                 + paddle + " TDC = " + TDC);    
+                if(TDC>0 ) this.getDataGroup().getItem(0,layer,0).getH2F("occTDC_lay"+layer).fill(paddle*1.0,sector*1.0);
+                if(layer==1)      this.getDetectorSummary().getH1F("sumPCAL").fill(sector*1.0);
+                else if (layer==2)this.getDetectorSummary().getH1F("sumECin").fill(sector*1.0);
+                else              this.getDetectorSummary().getH1F("sumECout").fill(sector*1.0);
+            }
+        }
     }
 
     @Override

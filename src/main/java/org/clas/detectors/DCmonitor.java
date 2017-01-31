@@ -5,14 +5,11 @@
  */
 package org.clas.detectors;
 
-import java.awt.BorderLayout;
-import javax.swing.JSplitPane;
 import org.clas.viewer.DetectorMonitor;
 import org.jlab.detector.base.DetectorType;
 import org.jlab.detector.view.DetectorShape2D;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
-import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 import org.jlab.groot.group.DataGroup;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
@@ -29,7 +26,7 @@ public class DCmonitor extends DetectorMonitor {
     public DCmonitor(String name) {
         super(name);
         this.setDetectorTabNames("Raw Occupancies","Normalized Occupancies");
-        this.init();
+        this.init(true);
     }
 
     
@@ -61,6 +58,7 @@ public class DCmonitor extends DetectorMonitor {
         }
     }
 
+    @Override
     public void drawDetector() {
         // Load the Constants
         Constants.Load(true, true, 0);
@@ -97,18 +95,6 @@ public class DCmonitor extends DetectorMonitor {
             }
         this.getDetectorView().setName("DC"); 
         //detectorViewDC.updateBox();
-    }
-
-    @Override
-    public void init() {
-        this.getDetectorPanel().setLayout(new BorderLayout());
-        this.drawDetector();
-        JSplitPane   splitPane = new JSplitPane();
-        splitPane.setLeftComponent(this.getDetectorView());
-        splitPane.setRightComponent(this.getDetectorCanvas());
-        this.getDetectorPanel().add(splitPane,BorderLayout.CENTER);  
-        this.createHistos();
-        this.plotHistos();
     }
         
     @Override
@@ -150,13 +136,6 @@ public class DCmonitor extends DetectorMonitor {
     }
 
     @Override
-    public void resetEventListener() {
-        System.out.println("Resetting DC histogram");
-        this.createHistos();
-        this.plotHistos();
-    }
-
-    @Override
     public void timerUpdate() {
 //        System.out.println("Updating DC");
         if(this.getNumberOfEvents()>0) {
@@ -168,11 +147,5 @@ public class DCmonitor extends DetectorMonitor {
             }
         }
     }
-
-    @Override
-    public void setCanvasUpdate(int time) {
-        this.getDetectorCanvas().getCanvas("Normalized Occupancies").initTimer(time);
-        this.getDetectorCanvas().getCanvas("Raw Occupancies").initTimer(time);
-    } 
 
 }

@@ -5,11 +5,9 @@
  */
 package org.clas.detectors;
 
-import java.awt.BorderLayout;
 import org.clas.viewer.DetectorMonitor;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
-import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 import org.jlab.groot.group.DataGroup;
 import org.jlab.io.base.DataEvent;
 
@@ -23,7 +21,7 @@ public class CTOFmonitor  extends DetectorMonitor {
         super(name);
         
         this.setDetectorTabNames("Occupancies");
-        this.init();
+        this.init(false);
     }
 
     @Override
@@ -51,23 +49,6 @@ public class CTOFmonitor  extends DetectorMonitor {
         dg.addDataSet(tdc, 3);
         this.getDataGroup().add(dg,0,0,0);
     }
-
-    public void drawDetector() {
-        this.getDetectorView().setName("CTOF");
-        this.getDetectorView().updateBox();
-    }
-
-    @Override
-    public void init() {
-        this.getDetectorPanel().setLayout(new BorderLayout());
-//        this.drawDetector();
-//        JSplitPane   splitPane = new JSplitPane();
-//        splitPane.setLeftComponent(this.getDetectorView());
-//        splitPane.setRightComponent(this.getDetectorCanvas());
-        this.getDetectorPanel().add(this.getDetectorCanvas(),BorderLayout.CENTER);
-        this.createHistos();
-        this.plotHistos();
-    }
         
     @Override
     public void plotHistos() {        
@@ -88,13 +69,6 @@ public class CTOFmonitor  extends DetectorMonitor {
     public void processEvent(DataEvent event) {
         // process event info and save into data group
 
-    }
-
-    @Override
-    public void resetEventListener() {
-        System.out.println("Resetting CTOF histogram");
-        this.createHistos();
-        this.plotHistos();
     }
 
     @Override

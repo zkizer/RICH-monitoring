@@ -71,7 +71,8 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
     CLASDecoder                clasDecoder = new CLASDecoder();
     DetectorEventDecoder   detectorDecoder = new DetectorEventDecoder();
            
-    private int updateTime = 2000;
+    private int canvasUpdateTime   = 2000;
+    private int analysisUpdateTime = 100;
     private int runNumber  = 0;
     
    // detector monitors
@@ -126,7 +127,7 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
       	tabbedpane 	= new JTabbedPane();
 
         processorPane = new DataSourceProcessorPane();
-        processorPane.setUpdateRate(10);
+        processorPane.setUpdateRate(analysisUpdateTime);
 
         mainPanel.add(tabbedpane);
         mainPanel.add(processorPane,BorderLayout.PAGE_END);
@@ -169,7 +170,8 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         }
         this.processorPane.addEventListener(this);
         
-        this.setCanvasUpdate(updateTime);
+        this.setCanvasUpdate(canvasUpdateTime);
+        this.plotSummaries();
     }
       
     public void actionPerformed(ActionEvent e) {
@@ -180,9 +182,9 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         if(e.getActionCommand()=="Open histograms file...") {
             String fileName = null;
             JFileChooser fc = new JFileChooser();
+            fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             File workingDirectory = new File(System.getProperty("user.dir"));
             fc.setCurrentDirectory(workingDirectory);
-            fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             int option = fc.showOpenDialog(null);
             if (option == JFileChooser.APPROVE_OPTION) {
                 fileName = fc.getSelectedFile().getAbsolutePath();            
@@ -193,10 +195,13 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
             this.printHistosToFile();
         }
         if(e.getActionCommand()=="Save histograms to file...") {
-            String fileName = "histo.hipo";
+            DateFormat df = new SimpleDateFormat("MM-dd-yyyy_hh.mm.ss_aa");
+            String fileName = "mon12_" + df.format(new Date()) + ".hipo";
             JFileChooser fc = new JFileChooser();
             File workingDirectory = new File(System.getProperty("user.dir"));
             fc.setCurrentDirectory(workingDirectory);
+            File file = new File(fileName);
+            fc.setSelectedFile(file);
             int returnValue = fc.showSaveDialog(null);
             if (returnValue == JFileChooser.APPROVE_OPTION) {
                fileName = fc.getSelectedFile().getAbsolutePath();            
@@ -273,7 +278,6 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
 
             if (event.getType() == DataEventType.EVENT_START) {
                 this.runNumber = this.getRunNumber(event);
-                resetEventListener();
             }
             if(this.runNumber != this.getRunNumber(event)) {
 //                this.saveToFile("mon12_histo_run_" + runNumber + ".hipo");
@@ -357,24 +361,11 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         }
     }
 
-    public void setCanvasUpdate(int time) {
-        System.out.println("Setting " + time + " ms update interval");
-        this.updateTime = time;
-        this.CLAS12Canvas.getCanvas("CLAS12").initTimer(time);
-        this.CLAS12Canvas.getCanvas("CLAS12").update();
-        for(int k=0; k<this.monitors.length; k++) {
-            this.monitors[k].setCanvasUpdate(time);
-        }
-    }
-
     @Override
-    public void timerUpdate() {
-//        System.out.println("Time to update ...");
-        for(int k=0; k<this.monitors.length; k++) {
-            this.monitors[k].timerUpdate();
-        }
-   }
-
+    public void processShape(DetectorShape2D shape) {
+        System.out.println("SHAPE SELECTED = " + shape.getDescriptor());
+    }
+    
     @Override
     public void resetEventListener() {
         for(int k=0; k<this.monitors.length; k++) {
@@ -394,15 +385,28 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         dir.writeFile(fileName);
     }
         
+    public void setCanvasUpdate(int time) {
+        System.out.println("Setting " + time + " ms update interval");
+        this.canvasUpdateTime = time;
+        this.CLAS12Canvas.getCanvas("CLAS12").initTimer(time);
+        this.CLAS12Canvas.getCanvas("CLAS12").update();
+        for(int k=0; k<this.monitors.length; k++) {
+            this.monitors[k].setCanvasUpdate(time);
+        }
+    }
+
     public void stateChanged(ChangeEvent e) {
         this.timerUpdate();
     }
     
     @Override
-    public void processShape(DetectorShape2D shape) {
-        System.out.println("SHAPE SELECTED = " + shape.getDescriptor());
-    }
-    
+    public void timerUpdate() {
+//        System.out.println("Time to update ...");
+        for(int k=0; k<this.monitors.length; k++) {
+            this.monitors[k].timerUpdate();
+        }
+   }
+
     public static void main(String[] args){
         JFrame frame = new JFrame("MON12");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

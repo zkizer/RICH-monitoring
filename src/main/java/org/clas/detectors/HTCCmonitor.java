@@ -5,11 +5,9 @@
  */
 package org.clas.detectors;
 
-import java.awt.BorderLayout;
 import org.clas.viewer.DetectorMonitor;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
-import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 import org.jlab.groot.group.DataGroup;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
@@ -25,7 +23,7 @@ public class HTCCmonitor  extends DetectorMonitor {
         super(name);
         
         this.setDetectorTabNames("Occupancies and Spectra");
-        this.init();
+        this.init(false);
     }
 
     @Override
@@ -61,23 +59,6 @@ public class HTCCmonitor  extends DetectorMonitor {
         dg.addDataSet(adc, 2);
         dg.addDataSet(tdc, 3);
         this.getDataGroup().add(dg,0,0,0);
-    }
-
-    public void drawDetector() {
-        this.getDetectorView().setName("HTCC");
-        this.getDetectorView().updateBox();
-    }
-
-    @Override
-    public void init() {
-        this.getDetectorPanel().setLayout(new BorderLayout());
-//        this.drawDetector();
-//        JSplitPane   splitPane = new JSplitPane();
-//        splitPane.setLeftComponent(this.getDetectorView());
-//        splitPane.setRightComponent(this.getDetectorCanvas());
-        this.getDetectorPanel().add(this.getDetectorCanvas(),BorderLayout.CENTER); 
-        this.createHistos();
-        this.plotHistos();
     }
         
     @Override
@@ -119,13 +100,6 @@ public class HTCCmonitor  extends DetectorMonitor {
 	    }
     	}
         
-    }
-
-    @Override
-    public void resetEventListener() {
-        System.out.println("Resetting HTCC histogram");
-        this.createHistos();
-        this.plotHistos();
     }
 
     @Override
