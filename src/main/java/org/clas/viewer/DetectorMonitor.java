@@ -139,6 +139,14 @@ public class DetectorMonitor implements IDataEventListener {
         // process event
     }
     
+    public void plotEvent(DataEvent event) {
+        // process event
+    }
+    
+    public void plotHistos() {
+
+    }
+    
     public void printCanvas(String dir) {
         // print canvas to files
         for(int tab=0; tab<this.detectorTabNames.size(); tab++) {
@@ -146,14 +154,6 @@ public class DetectorMonitor implements IDataEventListener {
             System.out.println(fileName);
             this.detectorCanvas.getCanvas(this.detectorTabNames.get(tab)).save(fileName);
         }
-    }
-    
-    public void plotEvent(DataEvent event) {
-        // process event
-    }
-    
-    public void plotHistos() {
-
     }
     
     @Override

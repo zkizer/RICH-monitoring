@@ -253,6 +253,10 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         return label;
     }
     
+    public JPanel  getPanel(){
+        return mainPanel;
+    }
+
     private int getRunNumber(DataEvent event) {
         int rNum = this.runNumber;
         DataBank bank = event.getBank("RUN::config");
@@ -262,10 +266,6 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         return rNum;
     }
     
-    public JPanel  getPanel(){
-        return mainPanel;
-    }
-
     @Override
     public void dataEventAction(DataEvent event) {
     	

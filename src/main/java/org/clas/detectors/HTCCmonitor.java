@@ -41,16 +41,18 @@ public class HTCCmonitor  extends DetectorMonitor {
         sum.addDataSet(summary, 0);
         this.setDetectorSummary(sum);
         H2F occADC = new H2F("occADC", "occADC", 8, 1, 9, 6, 1, 7);
-        occADC.setTitleX("ring");
+        occADC.setTitleX("ring-pmt");
         occADC.setTitleY("sector");
+        occADC.setTitle("ADC Occupancy");
         H2F occTDC = new H2F("occTDC", "occTDC", 8, 1, 9, 6, 1, 7);
-        occTDC.setTitleX("ring");
+        occTDC.setTitleX("ring-pmt");
         occTDC.setTitleY("sector");
+        occTDC.setTitle("TDC Occupancy");
         H2F adc = new H2F("adc", "adc", 100, 0, 5000, 48, 1, 49);
         adc.setTitleX("adc");
         adc.setTitleY("pmt");
         H2F tdc = new H2F("tdc", "tdc", 100, 0, 250, 48, 1, 49);
-        tdc.setTitleX("adc");
+        tdc.setTitleX("tdc");
         tdc.setTitleY("pmt");
            
         DataGroup dg = new DataGroup(2,2);
@@ -92,14 +94,28 @@ public class HTCCmonitor  extends DetectorMonitor {
                 float time  = bank.getFloat("time", loop);
 //                System.out.println("ROW " + loop + " SECTOR = " + sector + " LAYER = " + layer + " COMPONENT = " + comp + " ORDER + " + order +
 //                      " ADC = " + adc + " TIME = " + time); 
-                if(adc>0) this.getDataGroup().getItem(0,0,0).getH2F("occADC").fill(((layer-1)*2+comp)*1.0,sector*1.0);
-                if(time>0) this.getDataGroup().getItem(0,0,0).getH2F("occTDC").fill(((layer-1)*2+comp)*1.0,sector*1.0);
-                if(adc>0) this.getDataGroup().getItem(0,0,0).getH2F("adc").fill(adc*1.0,((sector-1)*8+(layer-1)*2+comp)*1.0);
-                if(time>0) this.getDataGroup().getItem(0,0,0).getH2F("tdc").fill(time,((sector-1)*8+(layer-1)*2+comp)*1.0);
+                if(adc>0) this.getDataGroup().getItem(0,0,0).getH2F("occADC").fill(((comp-1)*2+layer)*1.0,sector*1.0);
+                if(adc>0) this.getDataGroup().getItem(0,0,0).getH2F("adc").fill(adc*1.0,((sector-1)*8+(comp-1)*2+layer)*1.0);
+                if(time>0) this.getDataGroup().getItem(0,0,0).getH2F("tdc").fill(time,((sector-1)*8+(comp-1)*2+layer)*1.0);
                 this.getDetectorSummary().getH1F("summary").fill(sector*1.0);
 	    }
     	}
-        
+        if(event.hasBank("HTCC::tdc")==true){
+            DataBank  bank = event.getBank("HTCC::tdc");
+            int rows = bank.rows();
+            for(int i = 0; i < rows; i++){
+                int    sector = bank.getByte("sector",i);
+                int     layer = bank.getByte("layer",i);
+                int      comp = bank.getShort("component",i);
+                int       tdc = bank.getInt("TDC",i);
+                int     order = bank.getByte("order",i); // order specifies left-right for ADC
+//                           System.out.println("ROW " + i + " SECTOR = " + sector
+//                                 + " LAYER = " + layer + " PADDLE = "
+//                                 + paddle + " TDC = " + TDC);    
+                if(tdc>0) this.getDataGroup().getItem(0,0,0).getH2F("occTDC").fill(((comp-1)*2+layer)*1.0,sector*1.0);
+                this.getDetectorSummary().getH1F("summary").fill(sector*1.0);                
+            }
+        }        
     }
 
     @Override
