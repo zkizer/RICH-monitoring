@@ -92,10 +92,11 @@ public class ECmonitor  extends DetectorMonitor {
                 float time = bank.getFloat("time",loop);
 //                System.out.println(sector + " " + layer + " " + comp + " " + adc + " " + time);
                 if(adc>0 && time>=0) this.getDataGroup().getItem(0,layer,0).getH2F("occADC_lay"+layer).fill(comp*1.0,sector*1.0);
-                if(layer==1)      this.getDetectorSummary().getH1F("sumPCAL").fill(sector*1.0);
-                else if(layer==2) this.getDetectorSummary().getH1F("sumECin").fill(sector*1.0);
-                else              this.getDetectorSummary().getH1F("sumECout").fill(sector*1.0);
-
+                if(adc>0 && time>=0) {
+                    if(layer==1)      this.getDetectorSummary().getH1F("sumPCAL").fill(sector*1.0);
+                    else if(layer==2) this.getDetectorSummary().getH1F("sumECin").fill(sector*1.0);
+                    else              this.getDetectorSummary().getH1F("sumECout").fill(sector*1.0);
+                }
 	    }
     	}        
         if(event.hasBank("ECAL::tdc")==true){
@@ -111,9 +112,9 @@ public class ECmonitor  extends DetectorMonitor {
 //                                 + " LAYER = " + layer + " PADDLE = "
 //                                 + paddle + " TDC = " + TDC);    
                 if(TDC>0 ) this.getDataGroup().getItem(0,layer,0).getH2F("occTDC_lay"+layer).fill(paddle*1.0,sector*1.0);
-                if(layer==1)      this.getDetectorSummary().getH1F("sumPCAL").fill(sector*1.0);
-                else if (layer==2)this.getDetectorSummary().getH1F("sumECin").fill(sector*1.0);
-                else              this.getDetectorSummary().getH1F("sumECout").fill(sector*1.0);
+//                if(layer==1)      this.getDetectorSummary().getH1F("sumPCAL").fill(sector*1.0);
+//                else if (layer==2)this.getDetectorSummary().getH1F("sumECin").fill(sector*1.0);
+//                else              this.getDetectorSummary().getH1F("sumECout").fill(sector*1.0);
             }
         }
     }

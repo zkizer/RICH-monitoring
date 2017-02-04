@@ -39,18 +39,18 @@ public class LTCCmonitor  extends DetectorMonitor {
         DataGroup sum = new DataGroup(1,1);
         sum.addDataSet(summary, 0);
         this.setDetectorSummary(sum);
-        H2F occADC = new H2F("occADC", "occADC", 18, 1, 19, 12, 1, 13);
+        H2F occADC = new H2F("occADC", "occADC", 18, 1, 19, 12, 1, 7);
         occADC.setTitleX("pmt");
         occADC.setTitleY("sector/left-right");
         occADC.setTitle("Raw ADC Occupancy");
-        H2F occTDC = new H2F("occTDC", "occTDC", 18, 1, 19, 12, 1, 13);
+        H2F occTDC = new H2F("occTDC", "occTDC", 18, 1, 19, 12, 1, 7);
         occTDC.setTitleX("pmt left");
         occTDC.setTitleY("sector-left/right");
-        H2F occADCref = new H2F("occADCref", "occADCref", 18, 1, 19, 12, 1, 13);
+        H2F occADCref = new H2F("occADCref", "occADCref", 18, 1, 19, 12, 1, 7);
         occADCref.setTitleX("pmt");
         occADCref.setTitleY("sector-left/right");
         for(int ibin=0; ibin<occADCref.getDataBufferSize(); ibin++) occADCref.setDataBufferBin(ibin, (float) 1.0);
-        H2F occADCnorm = new H2F("occADCnorm", "occADCnorm", 18, 1, 19, 12, 1, 13);
+        H2F occADCnorm = new H2F("occADCnorm", "occADCnorm", 18, 1, 19, 12, 1, 7);
         occADCnorm.setTitleX("pmt");
         occADCnorm.setTitleY("sector-left/right");
         occADCnorm.setTitle("Normalized ADC Occupancy");
@@ -106,19 +106,21 @@ public class LTCCmonitor  extends DetectorMonitor {
                 int adc     = bank.getInt("ADC", loop);
                 float time  = bank.getFloat("time", loop);
                 int iPMT    = (sector-1)*18+comp;
+                if(adc>0 && time> 0) {
 //                System.out.println("ROW " + loop + " SECTOR = " + sector + " LAYER = " + layer + " COMPONENT = " + comp + " ORDER + " + order +
 //                      " ADC = " + adc + " TIME = " + time); 
-                if(adc>0) this.getDataGroup().getItem(0,0,0).getH2F("occADC").fill((comp)*1.0,(sector-1)*2.0+layer);
-                if(time>0) this.getDataGroup().getItem(0,0,0).getH2F("occTDC").fill((comp)*1.0,(sector-1)*2.0+layer);
-                if(layer==1) {
-                    if(adc>0) this.getDataGroup().getItem(0,0,0).getH2F("adcL").fill(adc*1.0,iPMT*1.0);
-                    if(time>0) this.getDataGroup().getItem(0,0,0).getH2F("tdcL").fill(time,iPMT*1.0);
-                } 
-                else if (layer==2) {
-                    if(adc>0) this.getDataGroup().getItem(0,0,0).getH2F("adcR").fill(adc*1.0,iPMT*1.0);
-                    if(time>0) this.getDataGroup().getItem(0,0,0).getH2F("tdcR").fill(time,iPMT*1.0);                    
+                    this.getDataGroup().getItem(0,0,0).getH2F("occADC").fill((comp)*1.0,(sector+order*0.5));
+//                    this.getDataGroup().getItem(0,0,0).getH2F("occTDC").fill((comp)*1.0,(sector-1)*2.0+layer);
+                    if(order==0) {
+                        this.getDataGroup().getItem(0,0,0).getH2F("adcL").fill(adc*1.0,iPMT*1.0);
+//                        this.getDataGroup().getItem(0,0,0).getH2F("tdcL").fill(time,iPMT*1.0);
+                    } 
+                    else if (order==1) {
+                        this.getDataGroup().getItem(0,0,0).getH2F("adcR").fill(adc*1.0,iPMT*1.0);
+//                        this.getDataGroup().getItem(0,0,0).getH2F("tdcR").fill(time,iPMT*1.0);                    
+                    }
+                    this.getDetectorSummary().getH1F("summary").fill(sector*1.0);
                 }
-                this.getDetectorSummary().getH1F("summary").fill(sector*1.0);
 	    }
     	}
     }

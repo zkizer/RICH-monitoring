@@ -149,9 +149,11 @@ public class FTOFmonitor  extends DetectorMonitor {
 //                                 + paddle + " ADC = " + ADC);    
                 if(ADC>0 && order==0) this.getDataGroup().getItem(0,layer,0).getH2F("occADCL_lay"+layer).fill(paddle*1.0,sector*1.0);
                 if(ADC>0 && order==1) this.getDataGroup().getItem(0,layer,0).getH2F("occADCR_lay"+layer).fill(paddle*1.0,sector*1.0);
-                if(layer==1)      this.getDetectorSummary().getH1F("sumP1A").fill(sector*1.0);
-                else if (layer==2)this.getDetectorSummary().getH1F("sumP1B").fill(sector*1.0);
-                else              this.getDetectorSummary().getH1F("sumP2").fill(sector*1.0);
+                if(ADC>0) {
+                    if(layer==1)      this.getDetectorSummary().getH1F("sumP1A").fill(sector*1.0);
+                    else if (layer==2)this.getDetectorSummary().getH1F("sumP1B").fill(sector*1.0);
+                    else              this.getDetectorSummary().getH1F("sumP2").fill(sector*1.0);
+                }
             }
         }
         if(event.hasBank("FTOF::tdc")==true){
@@ -168,9 +170,9 @@ public class FTOFmonitor  extends DetectorMonitor {
 //                                 + paddle + " TDC = " + TDC);    
                 if(TDC>0 && order==2) this.getDataGroup().getItem(0,layer,0).getH2F("occTDCL_lay"+layer).fill(paddle*1.0,sector*1.0);
                 if(TDC>0 && order==3) this.getDataGroup().getItem(0,layer,0).getH2F("occTDCR_lay"+layer).fill(paddle*1.0,sector*1.0);
-                if(layer==1)      this.getDetectorSummary().getH1F("sumP1A").fill(sector*1.0);
-                else if (layer==2)this.getDetectorSummary().getH1F("sumP1B").fill(sector*1.0);
-                else              this.getDetectorSummary().getH1F("sumP2").fill(sector*1.0);
+//                if(layer==1)      this.getDetectorSummary().getH1F("sumP1A").fill(sector*1.0);
+//                else if (layer==2)this.getDetectorSummary().getH1F("sumP1B").fill(sector*1.0);
+//                else              this.getDetectorSummary().getH1F("sumP2").fill(sector*1.0);
             }
         }
     }

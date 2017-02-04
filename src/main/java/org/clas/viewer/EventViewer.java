@@ -83,6 +83,7 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
     		new FTOFmonitor("FTOF"),
     		new ECmonitor("EC"),
     		new CTOFmonitor("CTOF"),
+    		new RFmonitor("RF"),
     };
         
     public EventViewer() {    	
@@ -183,7 +184,7 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
             String fileName = null;
             JFileChooser fc = new JFileChooser();
             fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-            File workingDirectory = new File(System.getProperty("user.dir"));
+            File workingDirectory = new File(System.getProperty("user.dir") + "/ONLINE/kpphistos");
             fc.setCurrentDirectory(workingDirectory);
             int option = fc.showOpenDialog(null);
             if (option == JFileChooser.APPROVE_OPTION) {
@@ -196,9 +197,9 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         }
         if(e.getActionCommand()=="Save histograms to file...") {
             DateFormat df = new SimpleDateFormat("MM-dd-yyyy_hh.mm.ss_aa");
-            String fileName = "mon12_" + df.format(new Date()) + ".hipo";
+            String fileName = "mon12_" + this.runNumber + "_" + df.format(new Date()) + ".hipo";
             JFileChooser fc = new JFileChooser();
-            File workingDirectory = new File(System.getProperty("user.dir"));
+            File workingDirectory = new File(System.getProperty("user.dir") + "/ONLINE/kpphistos");
             fc.setCurrentDirectory(workingDirectory);
             File file = new File(fileName);
             fc.setSelectedFile(file);
@@ -340,7 +341,7 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
     
     public void printHistosToFile() {
         DateFormat df = new SimpleDateFormat("MM-dd-yyyy_hh.mm.ss_aa");
-        String data = "mon12_" + df.format(new Date());        
+        String data = System.getProperty("user.dir") + "/ONLINE/kpphistos/mon12_" + this.runNumber + "_" + df.format(new Date());        
         File theDir = new File(data);
         // if the directory does not exist, create it
         if (!theDir.exists()) {
@@ -356,6 +357,9 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
             System.out.println("Created directory: " + data);
             }
         }
+        String fileName = data + "/clas12_canvas.png";
+        System.out.println(fileName);
+        this.CLAS12Canvas.getCanvas("CLAS12").save(fileName);
         for(int k=0; k<this.monitors.length; k++) {
             this.monitors[k].printCanvas(data);
         }

@@ -51,7 +51,7 @@ public class HTCCmonitor  extends DetectorMonitor {
         H2F adc = new H2F("adc", "adc", 100, 0, 5000, 48, 1, 49);
         adc.setTitleX("adc");
         adc.setTitleY("pmt");
-        H2F tdc = new H2F("tdc", "tdc", 100, 0, 250, 48, 1, 49);
+        H2F tdc = new H2F("tdc", "tdc", 50, 0, 250, 48, 1, 49);
         tdc.setTitleX("tdc");
         tdc.setTitleY("pmt");
            
@@ -94,10 +94,12 @@ public class HTCCmonitor  extends DetectorMonitor {
                 float time  = bank.getFloat("time", loop);
 //                System.out.println("ROW " + loop + " SECTOR = " + sector + " LAYER = " + layer + " COMPONENT = " + comp + " ORDER + " + order +
 //                      " ADC = " + adc + " TIME = " + time); 
-                if(adc>0) this.getDataGroup().getItem(0,0,0).getH2F("occADC").fill(((comp-1)*2+layer)*1.0,sector*1.0);
-                if(adc>0) this.getDataGroup().getItem(0,0,0).getH2F("adc").fill(adc*1.0,((sector-1)*8+(comp-1)*2+layer)*1.0);
-                if(time>0) this.getDataGroup().getItem(0,0,0).getH2F("tdc").fill(time,((sector-1)*8+(comp-1)*2+layer)*1.0);
-                this.getDetectorSummary().getH1F("summary").fill(sector*1.0);
+                if(adc>0 && time>0) {
+                    this.getDataGroup().getItem(0,0,0).getH2F("occADC").fill(((comp-1)*2+layer)*1.0,sector*1.0);
+                    this.getDataGroup().getItem(0,0,0).getH2F("adc").fill(adc*1.0,((sector-1)*8+(comp-1)*2+layer)*1.0);
+                    this.getDataGroup().getItem(0,0,0).getH2F("tdc").fill(time,((sector-1)*8+(comp-1)*2+layer)*1.0);
+                    this.getDetectorSummary().getH1F("summary").fill(sector*1.0);
+                }
 	    }
     	}
         if(event.hasBank("HTCC::tdc")==true){
@@ -113,7 +115,7 @@ public class HTCCmonitor  extends DetectorMonitor {
 //                                 + " LAYER = " + layer + " PADDLE = "
 //                                 + paddle + " TDC = " + TDC);    
                 if(tdc>0) this.getDataGroup().getItem(0,0,0).getH2F("occTDC").fill(((comp-1)*2+layer)*1.0,sector*1.0);
-                this.getDetectorSummary().getH1F("summary").fill(sector*1.0);                
+//                this.getDetectorSummary().getH1F("summary").fill(sector*1.0);                
             }
         }        
     }
