@@ -107,6 +107,7 @@ public class DCmonitor extends DetectorMonitor {
         this.getDetectorCanvas().getCanvas("Raw Occupancies").setGridX(false);
         this.getDetectorCanvas().getCanvas("Raw Occupancies").setGridY(false);
         for(int sector=1; sector <=6; sector++) {
+            this.getDetectorCanvas().getCanvas("Normalized Occupancies").getPad(sector-1).getAxisZ().setRange(0, 10.);
             this.getDetectorCanvas().getCanvas("Normalized Occupancies").cd(sector-1);
             this.getDetectorCanvas().getCanvas("Normalized Occupancies").draw(this.getDataGroup().getItem(sector,0,0).getH2F("occ_sec"+sector));
 //            this.getDataGroup().getItem(0,sector,0).getH2F("occ_sec"+sector).
