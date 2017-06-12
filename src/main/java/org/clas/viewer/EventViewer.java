@@ -85,6 +85,7 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
     		new CTOFmonitor("CTOF"),
     		new SVTmonitor("SVT"),
     		new RFmonitor("RF"),
+                new RICHmonitor("RICH"),
     };
         
     public EventViewer() {    	
