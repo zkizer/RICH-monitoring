@@ -42,6 +42,7 @@ import org.jlab.detector.decode.DetectorEventDecoder;
 import org.jlab.detector.view.DetectorListener;
 import org.jlab.detector.view.DetectorPane2D;
 import org.jlab.detector.view.DetectorShape2D;
+import org.jlab.detector.base.DetectorType;
 import org.jlab.groot.base.GStyle;
 import org.jlab.groot.data.TDirectory;
 import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
@@ -75,7 +76,7 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
     private int analysisUpdateTime = 100;
     private int runNumber  = 0;
     
-   // detector monitors
+   RICHmonitor rmon = new RICHmonitor("RICH");
     DetectorMonitor[] monitors = {
     		new DCmonitor("DC"),
     		new HTCCmonitor("HTCC"),
@@ -85,7 +86,7 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
     		new CTOFmonitor("CTOF"),
     		new SVTmonitor("SVT"),
     		new RFmonitor("RF"),
-                new RICHmonitor("RICH"),
+                rmon,
     };
         
     public EventViewer() {    	
@@ -272,7 +273,7 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
     @Override
     public void dataEventAction(DataEvent event) {
     	
-       // EvioDataEvent decodedEvent = deco.DecodeEvent(event, decoder, table);
+        //EvioDataEvent decodedEvent = deco.DecodeEvent(event, decoder, table);
         //decodedEvent.show();
         		
         HipoDataEvent hipo = null;
@@ -370,6 +371,9 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
     @Override
     public void processShape(DetectorShape2D shape) {
         System.out.println("SHAPE SELECTED = " + shape.getDescriptor());
+        if(shape.getDescriptor().getType()== DetectorType.UNDEFINED){
+            rmon.UpdatedHistos(shape);
+        }
     }
     
     @Override
