@@ -125,6 +125,7 @@ public class DetectorMonitor implements IDataEventListener {
         JSplitPane   splitPane = new JSplitPane();
         splitPane.setLeftComponent(getDetectorView());
         splitPane.setRightComponent(getDetectorCanvas());
+        splitPane.setResizeWeight(0.25);
         if(flagDetectorView) {
             getDetectorPanel().add(splitPane,BorderLayout.CENTER);  
         }
