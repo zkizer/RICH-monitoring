@@ -20,7 +20,7 @@ import org.jlab.io.base.DataEvent;
  */
 public class RICHmonitor extends DetectorMonitor {
     
-    private final int PMTRows = 24;
+    private final int PMTRows = 23;
     private int hit=0;
     
     public RICHmonitor(String name){
@@ -40,9 +40,11 @@ public class RICHmonitor extends DetectorMonitor {
                 DataGroup dg = new DataGroup(8,8);
                 int pixcount = 1;
                 for(int i =1; i<=8;i++){
-                    int t=6; //for conversion of pixel matrices to match histogram filling
+                    int t=6; //for conversion of pixel matrices to match histogram filling. Pixel order: 
+                    //  8  7  6  5  4  3  2  1
+                    // 16 15 14 13 12 11 10  9
                     for(int j=1;j<=8;j++){
-                        H1F histo = new H1F("pixel"+pixcount,"pixel"+pixcount,10,15,30);
+                        H1F histo = new H1F("pixel"+pixcount,"pixel"+pixcount,10,15,35);
                         histo.setTitle("PMT "+pmtcount+" Pixel "+pixcount);
                         histo.setFillColor(38);
                         dg.addDataSet(histo,pixcount+t);
@@ -99,11 +101,10 @@ public class RICHmonitor extends DetectorMonitor {
                     pos = getxy(pmt,pixel);
                     //this.getDataGroup().getItem(0,0,0).getH2F("ring").fill(pos[0],pos[1]);
                     DetectorShape2D shape = new DetectorShape2D();
-                    //shape.getDescriptor().setType(DetectorType.UNDEFINED);
                     shape.getDescriptor().setSectorLayerComponent(4,this.hit,0);
                     shape.createBarXY(1.0,1.0);
-                    shape.setColor(234, 238, 66);
                     shape.getShapePath().translateXYZ(pos[0],-pos[1],0);
+                    shape.setColor(234, 238, 66);
                     this.getDetectorView().getView().addShape("RICH",shape);
                     this.hit++;
                 }
@@ -131,10 +132,9 @@ public class RICHmonitor extends DetectorMonitor {
                     //System.out.println(irow+" "+part);
                 }
                 
-                int pixcol = (pixel-1) % 8; //rows/cols start with 0
+                int pixcol = (pixel-1) % 8; //rows & cols start with 0
                 int pixrow = (pixel-1) / 8;
                 double pixsize=1.25;
-                
                 //System.out.println(irow+" "+temp2);
                 double dimension = 10;
                 double PMTsep = 1.25;
@@ -153,17 +153,15 @@ public class RICHmonitor extends DetectorMonitor {
         double ypos = 0;
         double PMTsep = 1.25;
         int pmtcount=1;
-        this.getDetectorView().getView().addLayer("hits");
         for(int irow=1; irow<=PMTRows; irow++){
             int PMTinRow = 5 + irow;
             ypos = -(irow-1)*(dimension+PMTsep);
             for(int ipmt=1; ipmt<=PMTinRow; ipmt++){
-                
                 DetectorShape2D shape = new DetectorShape2D();
                 shape.getDescriptor().setType(DetectorType.UNDEFINED);
                 shape.getDescriptor().setSectorLayerComponent(4,0,pmtcount);
                 shape.createBarXY(dimension,dimension);
-                System.out.println(xpos+" "+ypos);
+                System.out.println(pmtcount);
                 shape.getShapePath().translateXYZ(xpos,ypos,0);
                 xpos = xpos - (dimension+PMTsep);
                 this.getDetectorView().getView().addShape("RICH",shape);
