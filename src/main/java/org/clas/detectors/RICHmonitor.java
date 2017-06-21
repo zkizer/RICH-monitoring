@@ -21,7 +21,9 @@ import org.jlab.io.base.DataEvent;
 public class RICHmonitor extends DetectorMonitor {
     
     private final int PMTRows = 23;
-    private int hit=0;
+    private final double pixsize=1.25;
+    private final double dimension = 10;
+    private final double PMTsep = 1.25;
     
     public RICHmonitor(String name){
         super(name);
@@ -81,66 +83,69 @@ public class RICHmonitor extends DetectorMonitor {
         // process event info and save into data group
         double pos[] = new double [2];
         if(event.hasBank("RICH::tdc")==true){
-            //System.out.println("yes");
             DataBank  bank = event.getBank("RICH::tdc");
             int rows = bank.rows();
-            //bank.show();
             for(int i = 0; i < rows; i++){
                 int    sector = bank.getByte("sector",i);
                 int     pmt = bank.getShort("pmt",i);
                 int    pixel = bank.getShort("pixel",i);
                 int       TDC = bank.getInt("TDC1",i);
-                //float    time = bank.getFloat("time",i);
-                //int     order = bank.getByte("order",i);
-                //double xpos = -row*(dimension+PMTsep)/2+PMTnum*(dim+PMTsep)+Pixcol*pixelsize
-                //double ypos = irow*(dim+PMTsep)+Pixrow*pixelsize
                 //if(pixel>0 && pixel<65) this.getDataGroup().getItem(0,0,0).getH2F("ring").fill(pmt*1.0,sector*1.0);
                 if(pixel>0 && pixel<65 && pmt>0 && pmt<=391){
+
                     this.getDataGroup().getItem(0,0,pmt).getH1F("pixel"+pixel).fill(TDC*1.0);
-                    //System.out.println("-------------> PMT"+pmt);
+                    int entries = this.getDataGroup().getItem(0,0,pmt).getH1F("pixel"+pixel).getEntries();
+                    
                     pos = getxy(pmt,pixel);
-                    //this.getDataGroup().getItem(0,0,0).getH2F("ring").fill(pos[0],pos[1]);
                     DetectorShape2D shape = new DetectorShape2D();
-                    shape.getDescriptor().setSectorLayerComponent(4,this.hit,0);
-                    shape.createBarXY(1.0,1.0);
+                    shape.getDescriptor().setSectorLayerComponent(4,pmt,pixel);
+                    shape.createBarXY(1.2,1.2);
                     shape.getShapePath().translateXYZ(pos[0],-pos[1],0);
-                    shape.setColor(234, 238, 66);
+                    //create color map
+                    double min = 0;
+                    double max = 20;
+                    double f = (entries-min)/(max-min);
+                    double a = (1-f)/0.25;
+                    int x = (int) Math.floor(a);
+                    double y = Math.floor(255*(a-x));
+                    int Y = (int) y;
+                    switch(x){
+                        case 0:  shape.setColor(255,255-Y,0); break;
+                        case 1:  shape.setColor(Y,255,0);  break;
+                        case 2:  shape.setColor(0, 255, Y); break;
+                        case 3:   shape.setColor(0, 255-Y, 255); break;
+                        case 4:  shape.setColor(0, 0, 255); break;
+                        default: shape.setColor(255, 255, 0); break;
+                    }
                     this.getDetectorView().getView().addShape("RICH",shape);
-                    this.hit++;
                 }
             }
             this.getDetectorView().update();
-            
        }       
     }
     
-    public static double[] getxy(int pmt, int pixel){
-                double[] pos = new double[2];
-                int irow=1;
-                int part=6;
-                int temp1=pmt;
-                int temp2=pmt;
+    public double[] getxy(int pmt, int pixel){
+            double[] pos = new double[2];
+            int irow=1;
+            int part=6;
+            int temp1=pmt;
+            int temp2=pmt;
 
-                while(temp1>0 && pmt>6){
-                    temp1 = temp1 - part;
-                    if(temp1<=0){
-                         break;
-                    }
-                    irow++;
-                    part++;
-                    temp2=temp1;
-                    //System.out.println(irow+" "+part);
+            while(temp1>0 && pmt>6){
+                temp1 = temp1 - part;
+                if(temp1<=0){
+                     break;
                 }
-                
-                int pixcol = (pixel-1) % 8; //rows & cols start with 0
-                int pixrow = (pixel-1) / 8;
-                double pixsize=1.25;
-                //System.out.println(irow+" "+temp2);
-                double dimension = 10;
-                double PMTsep = 1.25;
-                pos[0] = (irow-1) * (dimension+PMTsep)/2 + dimension/2 - (temp2-1)*(dimension+PMTsep)-(pixcol)*pixsize-pixsize/2; 
-                pos[1] = (irow-1)*(dimension+PMTsep)+dimension/2-((pixrow)*pixsize)-pixsize/2;
-                if(pmt==1) System.out.println(pixel);
+                irow++;
+                part++;
+                temp2=temp1;
+            }
+
+            int pixcol = (pixel-1) % 8; //rows & cols start with 0
+            int pixrow = (pixel-1) / 8;
+            
+            pos[0] = (irow-1) * (dimension+PMTsep)/2 + dimension/2 - (temp2-1)*(dimension+PMTsep)-(pixcol)*pixsize-pixsize/2; 
+            pos[1] = (irow-1)*(dimension+PMTsep)+dimension/2-((pixrow)*pixsize)-pixsize/2;
             
         return pos;
     }
@@ -148,10 +153,8 @@ public class RICHmonitor extends DetectorMonitor {
     
     @Override
     public void drawDetector() {
-        int dimension = 10;
         double xpos = 0;
         double ypos = 0;
-        double PMTsep = 1.25;
         int pmtcount=1;
         for(int irow=1; irow<=PMTRows; irow++){
             int PMTinRow = 5 + irow;
@@ -161,6 +164,7 @@ public class RICHmonitor extends DetectorMonitor {
                 shape.getDescriptor().setType(DetectorType.UNDEFINED);
                 shape.getDescriptor().setSectorLayerComponent(4,0,pmtcount);
                 shape.createBarXY(dimension,dimension);
+                shape.setColor(230,230,230);
                 System.out.println(pmtcount);
                 shape.getShapePath().translateXYZ(xpos,ypos,0);
                 xpos = xpos - (dimension+PMTsep);
