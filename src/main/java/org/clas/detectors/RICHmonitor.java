@@ -81,6 +81,7 @@ public class RICHmonitor extends DetectorMonitor {
    @Override
     public void processEvent(DataEvent event) { 
         // process event info and save into data group
+        this.plotEvent(event);
         double pos[] = new double [2];
         if(event.hasBank("RICH::tdc")==true){
             DataBank  bank = event.getBank("RICH::tdc");
@@ -165,7 +166,6 @@ public class RICHmonitor extends DetectorMonitor {
                 shape.getDescriptor().setSectorLayerComponent(4,0,pmtcount);
                 shape.createBarXY(dimension,dimension);
                 shape.setColor(230,230,230);
-                System.out.println(pmtcount);
                 shape.getShapePath().translateXYZ(xpos,ypos,0);
                 xpos = xpos - (dimension+PMTsep);
                 this.getDetectorView().getView().addShape("RICH",shape);
