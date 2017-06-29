@@ -8,7 +8,6 @@ package org.clas.detectors;
 import org.clas.viewer.DetectorMonitor;
 import org.jlab.detector.base.DetectorType;
 import org.jlab.detector.view.DetectorShape2D;
-import org.jlab.geom.prim.Point3D;
 import org.jlab.groot.data.H1F;
 import org.jlab.groot.data.H2F;
 import org.jlab.groot.group.DataGroup;
@@ -23,7 +22,8 @@ public class RICHmonitor extends DetectorMonitor {
     private final int PMTRows = 23;
     private final double pixsize=1.25;
     private final double dimension = 10;
-    private final double PMTsep = 1.25;
+    private final double PMTsep = dimension/8;
+    private DetectorShape2D[][] Pixels = new DetectorShape2D[391][64];
     
     public RICHmonitor(String name){
         super(name);
@@ -72,6 +72,7 @@ public class RICHmonitor extends DetectorMonitor {
     }
     
     public void UpdatedHistos(DetectorShape2D shape){
+        //when shape is selected, draw the histogram for the 8x8 pixel array
         int pmt = shape.getDescriptor().getComponent();
         this.getDetectorCanvas().getCanvas("Histograms").clear();
         this.getDetectorCanvas().getCanvas("Histograms").draw(this.getDataGroup().getItem(0,0,pmt));
@@ -81,8 +82,6 @@ public class RICHmonitor extends DetectorMonitor {
    @Override
     public void processEvent(DataEvent event) { 
         // process event info and save into data group
-        this.plotEvent(event);
-        double pos[] = new double [2];
         if(event.hasBank("RICH::tdc")==true){
             DataBank  bank = event.getBank("RICH::tdc");
             int rows = bank.rows();
@@ -96,12 +95,10 @@ public class RICHmonitor extends DetectorMonitor {
 
                     this.getDataGroup().getItem(0,0,pmt).getH1F("pixel"+pixel).fill(TDC*1.0);
                     int entries = this.getDataGroup().getItem(0,0,pmt).getH1F("pixel"+pixel).getEntries();
-                    
-                    pos = getxy(pmt,pixel);
-                    DetectorShape2D shape = new DetectorShape2D();
-                    shape.getDescriptor().setSectorLayerComponent(4,pmt,pixel);
-                    shape.createBarXY(1.2,1.2);
-                    shape.getShapePath().translateXYZ(pos[0],-pos[1],0);
+                    if(this.Pixels[pmt-1][pixel-1].getCounter()==0){
+                        this.getDetectorView().getView().addShape("RICH",this.Pixels[pmt-1][pixel-1]);
+                        this.Pixels[pmt-1][pixel-1].setCounter(1);
+                    }
                     //create color map
                     double min = 0;
                     double max = 20;
@@ -111,44 +108,18 @@ public class RICHmonitor extends DetectorMonitor {
                     double y = Math.floor(255*(a-x));
                     int Y = (int) y;
                     switch(x){
-                        case 0:  shape.setColor(255,255-Y,0); break;
-                        case 1:  shape.setColor(Y,255,0);  break;
-                        case 2:  shape.setColor(0, 255, Y); break;
-                        case 3:   shape.setColor(0, 255-Y, 255); break;
-                        case 4:  shape.setColor(0, 0, 255); break;
-                        default: shape.setColor(255, 255, 0); break;
+                        case 0:  this.Pixels[pmt-1][pixel-1].setColor(255,255-Y,0); break;
+                        case 1:  this.Pixels[pmt-1][pixel-1].setColor(Y,255,0);  break;
+                        case 2:  this.Pixels[pmt-1][pixel-1].setColor(0, 255, Y); break;
+                        case 3:  this.Pixels[pmt-1][pixel-1].setColor(0, 255-Y, 255); break;
+                        case 4:  this.Pixels[pmt-1][pixel-1].setColor(0, 0, 255); break;
+                        default: this.Pixels[pmt-1][pixel-1].setColor(255, 255, 0); break;
                     }
-                    this.getDetectorView().getView().addShape("RICH",shape);
+                    this.getDetectorView().getView().addShape("RICH",this.Pixels[pmt-1][pixel-1]);
                 }
             }
             this.getDetectorView().update();
        }       
-    }
-    
-    public double[] getxy(int pmt, int pixel){
-            double[] pos = new double[2];
-            int irow=1;
-            int part=6;
-            int temp1=pmt;
-            int temp2=pmt;
-
-            while(temp1>0 && pmt>6){
-                temp1 = temp1 - part;
-                if(temp1<=0){
-                     break;
-                }
-                irow++;
-                part++;
-                temp2=temp1;
-            }
-
-            int pixcol = (pixel-1) % 8; //rows & cols start with 0
-            int pixrow = (pixel-1) / 8;
-            
-            pos[0] = (irow-1) * (dimension+PMTsep)/2 + dimension/2 - (temp2-1)*(dimension+PMTsep)-(pixcol)*pixsize-pixsize/2; 
-            pos[1] = (irow-1)*(dimension+PMTsep)+dimension/2-((pixrow)*pixsize)-pixsize/2;
-            
-        return pos;
     }
     
     
@@ -169,6 +140,21 @@ public class RICHmonitor extends DetectorMonitor {
                 shape.getShapePath().translateXYZ(xpos,ypos,0);
                 xpos = xpos - (dimension+PMTsep);
                 this.getDetectorView().getView().addShape("RICH",shape);
+                int pixelcount=0;
+                for(int i=0;i<8;i++){
+                    for(int j = 0;j<8;j++){
+                        DetectorShape2D pixel = new DetectorShape2D();
+                        pixel.getDescriptor().setSectorLayerComponent(4,pmtcount,pixelcount);
+                        pixel.createBarXY(1.25, 1.25);
+                        pixel.setColor(220,220,220);
+                        double posx = (irow-1) * (dimension+PMTsep)/2 + dimension/2 - (ipmt-1)*(dimension+PMTsep)-(j)*pixsize-pixsize/2; 
+                        double posy = (irow-1)*(dimension+PMTsep)+dimension/2-(i)*pixsize-pixsize/2;
+                        pixel.getShapePath().translateXYZ(posx,-posy,0);
+                        pixel.setCounter(0);
+                        this.Pixels[pmtcount-1][pixelcount]=pixel;
+                        pixelcount++;
+                        }
+                    }
                 pmtcount++;
             }
             xpos = (irow)*(dimension+PMTsep)/2;
