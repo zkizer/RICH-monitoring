@@ -27,7 +27,6 @@ public class RICHmonitor extends DetectorMonitor {
     private DetectorShape2D[][] Pixels = new DetectorShape2D[391][64];
     private int counter[][] = new int[391][64];
     private int max = 0;
-    private int LocalMax = 0;
     
     public RICHmonitor(String name){
         super(name);
@@ -78,18 +77,15 @@ public class RICHmonitor extends DetectorMonitor {
     
     @Override
     public void analyze() {
-
+        this.getDetectorView().getView().getAxis("RICH").setMinMax(0.0,(double) this.max);
+        this.getDetectorView().getView().getColorAxis().setRange(0.0,(double) this.max);
         for(int ipmt=0;ipmt<391;ipmt++){
             for(int ipixel=0;ipixel<64; ipixel++){
-                if(this.counter[ipmt][ipixel]>this.max)
-                    this.max=this.counter[ipmt][ipixel];
                 this.Pixels[ipmt][ipixel].setCounter(this.counter[ipmt][ipixel]);
                 if(this.counter[ipmt][ipixel]>0)
                     this.getDetectorView().getView().addShape("RICH",this.Pixels[ipmt][ipixel]);
             }
         }
-        this.getDetectorView().getView().getAxis("RICH").setMinMax(0.0,(double) this.max);
-        this.getDetectorView().getView().getColorAxis().setRange(0.0,(double) this.max);
         this.getDetectorView().update();
     }
     
@@ -128,6 +124,7 @@ public class RICHmonitor extends DetectorMonitor {
                     this.getDataGroup().getItem(0,pmt,0).getH1F("TDC2 pixel"+pixel).fill(TDC2*1.0);
                     this.getDataGroup().getItem(0,0,pmt).getH1F("TDC difference pixel"+pixel).fill(TDCdifference*1.0);
                     this.counter[pmt-1][pixel-1]++;
+                    if(this.counter[pmt-1][pixel-1]>this.max){this.max = counter[pmt-1][pixel-1];}
                 }
             }
        }
@@ -143,16 +140,11 @@ public class RICHmonitor extends DetectorMonitor {
                 int     pmt = bank.getShort("pmt",i);
                 int    pixel = bank.getShort("pixel",i);
                 if(pixel>0 && pixel<65 && pmt>0 && pmt<=391){
-                    if(this.counter[pmt-1][pixel-1]==1){
+                    if(this.counter[pmt-1][pixel-1]==1)
                         this.getDetectorView().getView().addShape("RICH",this.Pixels[pmt-1][pixel-1]);
-                    }
+                    this.getDetectorView().getView().getAxis("RICH").setMinMax(0.0,(double) this.max);
+                    this.getDetectorView().getView().getColorAxis().setRange(0.0,(double) this.max);
                     this.Pixels[pmt-1][pixel-1].setCounter(this.counter[pmt-1][pixel-1]);
-                    //update the local max
-                    if(this.Pixels[pmt-1][pixel-1].getCounter()>this.LocalMax){
-                        this.LocalMax = this.Pixels[pmt-1][pixel-1].getCounter();
-                    }
-                    this.getDetectorView().getView().getAxis("RICH").setMinMax(0.0,(double) this.LocalMax);
-                    this.getDetectorView().getView().getColorAxis().setRange(0.0,(double) this.LocalMax);
                 }
             }
             this.getDetectorView().update();
