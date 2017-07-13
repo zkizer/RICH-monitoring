@@ -9,11 +9,9 @@ import org.clas.viewer.DetectorMonitor;
 import org.jlab.detector.base.DetectorType;
 import org.jlab.detector.view.DetectorShape2D;
 import org.jlab.groot.data.H1F;
-import org.jlab.groot.data.H2F;
 import org.jlab.groot.group.DataGroup;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
-import org.jlab.io.base.DataEventType;
 /**
  *
  * @author justin
@@ -77,8 +75,8 @@ public class RICHmonitor extends DetectorMonitor {
     
     @Override
     public void analyze() {
-        this.getDetectorView().getView().getAxis("RICH").setMinMax(0.0,(double) this.max);
-        this.getDetectorView().getView().getColorAxis().setRange(0.0,(double) this.max);
+        this.getDetectorView().getView().getAxis("RICH").setMinMax(0.0,this.max);
+        this.getDetectorView().getView().getColorAxis().setRange(0.0,this.max);
         for(int ipmt=0;ipmt<391;ipmt++){
             for(int ipixel=0;ipixel<64; ipixel++){
                 this.Pixels[ipmt][ipixel].setCounter(this.counter[ipmt][ipixel]);
@@ -142,8 +140,8 @@ public class RICHmonitor extends DetectorMonitor {
                 if(pixel>0 && pixel<65 && pmt>0 && pmt<=391){
                     if(this.counter[pmt-1][pixel-1]==1)
                         this.getDetectorView().getView().addShape("RICH",this.Pixels[pmt-1][pixel-1]);
-                    this.getDetectorView().getView().getAxis("RICH").setMinMax(0.0,(double) this.max);
-                    this.getDetectorView().getView().getColorAxis().setRange(0.0,(double) this.max);
+                    this.getDetectorView().getView().getAxis("RICH").setMinMax(0.0,this.max);
+                    this.getDetectorView().getView().getColorAxis().setRange(0.0,this.max);
                     this.Pixels[pmt-1][pixel-1].setCounter(this.counter[pmt-1][pixel-1]);
                 }
             }
