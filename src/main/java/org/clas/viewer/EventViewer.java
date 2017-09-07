@@ -76,7 +76,8 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
     private int analysisUpdateTime = 100;
     private int runNumber  = 0;
     
-   RICHmonitor rmon = new RICHmonitor("RICH");
+    RICHmonitor rmon = new RICHmonitor("RICH");
+    CosmicRICHmonitor rcmon = new CosmicRICHmonitor("CosmicRICH");
     DetectorMonitor[] monitors = {
     		new DCmonitor("DC"),
     		new HTCCmonitor("HTCC"),
@@ -87,6 +88,7 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
     		new SVTmonitor("SVT"),
     		new RFmonitor("RF"),
                 rmon,
+                rcmon,
     };
         
     public EventViewer() {    	
@@ -373,6 +375,7 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         System.out.println("SHAPE SELECTED = " + shape.getDescriptor());
         if(shape.getDescriptor().getType()== DetectorType.UNDEFINED){
             rmon.UpdatedHistos(shape);
+            rcmon.UpdatedHistos(shape);
         }
     }
     
