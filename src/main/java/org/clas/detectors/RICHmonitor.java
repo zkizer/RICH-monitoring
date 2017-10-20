@@ -12,6 +12,7 @@ import org.jlab.groot.data.H1F;
 import org.jlab.groot.group.DataGroup;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
+import java.util.HashMap;
 /**
  *
  * @author justin
@@ -45,24 +46,20 @@ public class RICHmonitor extends DetectorMonitor {
                 DataGroup tdcdifference = new DataGroup(8,8);
                 int pixcount = 1;
                 for(int i =1; i<=8;i++){
-                    int t=6; //for conversion of pixel matrices to match histogram filling. Pixel order: 
-                    //  8  7  6  5  4  3  2  1
-                    // 16 15 14 13 12 11 10  9
                     for(int j=1;j<=8;j++){
                         H1F TDC1 = new H1F("TDC1 pixel"+pixcount,"TDC1 pixel"+pixcount,10,15,35);
                         TDC1.setTitle("PMT "+pmtcount+" Pixel "+pixcount);
                         TDC1.setFillColor(38);
-                        tdc1.addDataSet(TDC1,pixcount+t);
+                        tdc1.addDataSet(TDC1,pixcount-1);
                         H1F TDC2 = new H1F("TDC2 pixel"+pixcount,"TDC2 pixel"+pixcount,10,0,50);
                         TDC2.setTitle("PMT "+pmtcount+" Pixel "+pixcount);
                         TDC2.setFillColor(38);
-                        tdc2.addDataSet(TDC2,pixcount+t);
+                        tdc2.addDataSet(TDC2,pixcount-1);
                         H1F TDCdiff = new H1F("TDC difference pixel"+pixcount,"TDC difference pixel"+pixcount,10,0,50);
                         TDCdiff.setTitle("PMT "+pmtcount+" Pixel "+pixcount);
                         TDCdiff.setFillColor(38);
-                        tdcdifference.addDataSet(TDCdiff,pixcount+t);
+                        tdcdifference.addDataSet(TDCdiff,pixcount-1);
                         pixcount++;
-                        t=t-2;
                     }
                 }
                 this.getDataGroup().add(tdc1,pmtcount,0,0);
@@ -80,7 +77,7 @@ public class RICHmonitor extends DetectorMonitor {
         for(int ipmt=0;ipmt<391;ipmt++){
             for(int ipixel=0;ipixel<64; ipixel++){
                 this.Pixels[ipmt][ipixel].setCounter(this.counter[ipmt][ipixel]);
-                if(this.counter[ipmt][ipixel]>0)
+                if(this.counter[ipmt][ipixel]==1)
                     this.getDetectorView().getView().addShape("RICH",this.Pixels[ipmt][ipixel]);
             }
         }
@@ -104,7 +101,8 @@ public class RICHmonitor extends DetectorMonitor {
     }
     
    @Override
-    public void processEvent(DataEvent event) { 
+    public void processEvent(DataEvent event) {
+        System.out.println(event.getType());
         // process event info and save into data group
         if(event.hasBank("RICH::tdc")==true){
             DataBank  bank = event.getBank("RICH::tdc");
@@ -116,7 +114,6 @@ public class RICHmonitor extends DetectorMonitor {
                 int       TDC1 = bank.getInt("TDC1",i);
                 int    TDC2 = bank.getInt("TDC2",i);
                 int     TDCdifference = TDC2 - TDC1;
-                //if(pixel>0 && pixel<65) this.getDataGroup().getItem(0,0,0).getH2F("ring").fill(pmt*1.0,sector*1.0);
                 if(pixel>0 && pixel<65 && pmt>0 && pmt<=391){
                     this.getDataGroup().getItem(pmt,0,0).getH1F("TDC1 pixel"+pixel).fill(TDC1*1.0);
                     this.getDataGroup().getItem(0,pmt,0).getH1F("TDC2 pixel"+pixel).fill(TDC2*1.0);
@@ -171,8 +168,8 @@ public class RICHmonitor extends DetectorMonitor {
                         DetectorShape2D pixel = new DetectorShape2D();
                         pixel.getDescriptor().setSectorLayerComponent(4,pmtcount,pixelcount);
                         pixel.createBarXY(1.25, 1.25);
-                        pixel.setColor(220,220,220);
-                        double posx = (irow-1) * (dimension+PMTsep)/2 + dimension/2 - (ipmt-1)*(dimension+PMTsep)-(j)*pixsize-pixsize/2; 
+                        pixel.setColor(0,0,0);
+                        double posx = (irow-1) * (dimension+PMTsep)/2 - dimension/2 - (ipmt-1)*(dimension+PMTsep)+(j)*pixsize+pixsize/2; 
                         double posy = (irow-1)*(dimension+PMTsep)+dimension/2-(i)*pixsize-pixsize/2;
                         pixel.getShapePath().translateXYZ(posx,-posy,0);
                         pixel.setCounter(0);
@@ -189,3 +186,4 @@ public class RICHmonitor extends DetectorMonitor {
     }
 
 }
+

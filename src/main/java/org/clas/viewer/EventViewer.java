@@ -77,18 +77,8 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
     private int runNumber  = 0;
     
     RICHmonitor rmon = new RICHmonitor("RICH");
-    CosmicRICHmonitor rcmon = new CosmicRICHmonitor("CosmicRICH");
     DetectorMonitor[] monitors = {
-    		new DCmonitor("DC"),
-    		new HTCCmonitor("HTCC"),
-    		new LTCCmonitor("LTCC"),
-    		new FTOFmonitor("FTOF"),
-    		new ECmonitor("EC"),
-    		new CTOFmonitor("CTOF"),
-    		new SVTmonitor("SVT"),
-    		new RFmonitor("RF"),
-                rmon,
-                rcmon,
+                rmon
     };
         
     public EventViewer() {    	
@@ -144,32 +134,13 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         GStyle.getAxisAttributesY().setTitleFontSize(18);
         GStyle.getAxisAttributesY().setLabelFontSize(14);
         CLAS12Canvas    = new EmbeddedCanvasTabbed("CLAS12");
-        CLAS12Canvas.getCanvas("CLAS12").divide(3,3);
-        CLAS12Canvas.getCanvas("CLAS12").setGridX(false);
-        CLAS12Canvas.getCanvas("CLAS12").setGridY(false);
+        //CLAS12Canvas.getCanvas("CLAS12").divide(3,3);
+        //CLAS12Canvas.getCanvas("CLAS12").setGridX(false);
+        //CLAS12Canvas.getCanvas("CLAS12").setGridY(false);
         JPanel    CLAS12View = new JPanel(new BorderLayout());
         JSplitPane splitPanel = new JSplitPane();
         splitPanel.setLeftComponent(CLAS12View);
         splitPanel.setRightComponent(CLAS12Canvas);
-        JTextPane clas12Text   = new JTextPane();
-        clas12Text.setText("CLAS12\n monitoring plots\n V1.0\n");
-        clas12Text.setEditable(false);
-        StyledDocument styledDoc = clas12Text.getStyledDocument();
-        SimpleAttributeSet center = new SimpleAttributeSet();
-        StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
-        styledDoc.setParagraphAttributes(0, styledDoc.getLength(), center, false);
-        clas12Text.setBackground(CLAS12View.getBackground());
-        clas12Text.setFont(new Font("Avenir",Font.PLAIN,20));
-        JLabel clas12Design = this.getImage("https://www.jlab.org/Hall-B/clas12-web/sidebar/clas12-design.jpg",0.1);
-        JLabel clas12Logo   = this.getImage("https://www.jlab.org/Hall-B/pubs-web/logo/CLAS-frame-low.jpg", 0.3);
-//        CLAS12View.add(clas12Name,BorderLayout.PAGE_START);
-        CLAS12View.add(clas12Design);
-        CLAS12View.add(clas12Text,BorderLayout.PAGE_END);
- 
-        
-        tabbedpane.add(splitPanel,"CLAS12");
-        tabbedpane.addChangeListener(this);
-       
         for(int k =0; k<this.monitors.length; k++) {
                 this.tabbedpane.add(this.monitors[k].getDetectorPanel(), this.monitors[k].getDetectorName());
         	this.monitors[k].getDetectorView().getView().addDetectorListener(this);
@@ -177,7 +148,6 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         this.processorPane.addEventListener(this);
         
         this.setCanvasUpdate(canvasUpdateTime);
-        this.plotSummaries();
     }
       
     public void actionPerformed(ActionEvent e) {
@@ -240,24 +210,6 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
             }
         }
     }
-        
-    private JLabel getImage(String path,double scale) {
-        JLabel label = null;
-        Image image = null;
-        try {
-            URL url = new URL(path);
-            image = ImageIO.read(url);
-        } catch (IOException e) {
-        	e.printStackTrace();
-                System.out.println("Picture upload from " + path + " failed");
-        }
-        ImageIcon imageIcon = new ImageIcon(image);
-        double width  = imageIcon.getIconWidth()*scale;
-        double height = imageIcon.getIconHeight()*scale;
-        imageIcon = new ImageIcon(image.getScaledInstance((int) width,(int) height, Image.SCALE_SMOOTH));
-        label = new JLabel(imageIcon);
-        return label;
-    }
     
     public JPanel  getPanel(){
         return mainPanel;
@@ -316,32 +268,6 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         for(int k=0; k<this.monitors.length; k++) {
             this.monitors[k].readDataGroup(dir);
         }
-        this.plotSummaries();
-    }
-
-    public void plotSummaries() {
-        this.CLAS12Canvas.getCanvas("CLAS12").cd(0);
-        if(this.monitors[0].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[0].getDetectorSummary().getH1F("summary"));
-//        this.CLAS12Canvas.getCanvas("CLAS12").cd(1);
-//        if(this.monitors[1].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[1].getDetectorSummary().getH1F("sumHBT"));
-//        this.CLAS12Canvas.getCanvas("CLAS12").cd(2);
-//        if(this.monitors[1].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[1].getDetectorSummary().getH1F("sumTBT"));
-        this.CLAS12Canvas.getCanvas("CLAS12").cd(1);
-        if(this.monitors[1].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[1].getDetectorSummary().getH1F("summary"));
-        this.CLAS12Canvas.getCanvas("CLAS12").cd(2);
-        if(this.monitors[2].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[2].getDetectorSummary().getH1F("summary"));       
-        this.CLAS12Canvas.getCanvas("CLAS12").cd(3);
-        if(this.monitors[3].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[3].getDetectorSummary().getH1F("sumP1A"));
-        this.CLAS12Canvas.getCanvas("CLAS12").cd(4);
-        if(this.monitors[3].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[3].getDetectorSummary().getH1F("sumP1B"));
-        this.CLAS12Canvas.getCanvas("CLAS12").cd(5);
-        if(this.monitors[3].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[3].getDetectorSummary().getH1F("sumP2"));
-        this.CLAS12Canvas.getCanvas("CLAS12").cd(6);
-        if(this.monitors[4].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[4].getDetectorSummary().getH1F("sumECin"));
-        this.CLAS12Canvas.getCanvas("CLAS12").cd(7);
-        if(this.monitors[4].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[4].getDetectorSummary().getH1F("sumECout"));
-        this.CLAS12Canvas.getCanvas("CLAS12").cd(8);
-        if(this.monitors[4].getDetectorSummary()!=null) this.CLAS12Canvas.getCanvas("CLAS12").draw(this.monitors[4].getDetectorSummary().getH1F("sumPCAL"));
     }
     
     public void printHistosToFile() {
@@ -375,7 +301,6 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         System.out.println("SHAPE SELECTED = " + shape.getDescriptor());
         if(shape.getDescriptor().getType()== DetectorType.UNDEFINED){
             rmon.UpdatedHistos(shape);
-            rcmon.UpdatedHistos(shape);
         }
     }
     
@@ -385,7 +310,7 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
             this.monitors[k].resetEventListener();
             this.monitors[k].timerUpdate();
         }      
-        this.plotSummaries();
+        //this.plotSummaries();
     }
     
     public void saveHistosToFile(String fileName) {
