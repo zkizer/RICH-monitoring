@@ -102,7 +102,6 @@ public class RICHmonitor extends DetectorMonitor {
     
    @Override
     public void processEvent(DataEvent event) {
-        System.out.println(event.getType());
         // process event info and save into data group
         if(event.hasBank("RICH::tdc")==true){
             DataBank  bank = event.getBank("RICH::tdc");
