@@ -219,7 +219,6 @@ public class RICHmonitor extends DetectorMonitor {
     
     @Override
     public void analyze() {
-        System.out.println("here");
         this.getDetectorView().getView().getAxis("RICH").setMinMax(0.0,this.max);
         this.getDetectorView().getView().getColorAxis().setRange(0.0,this.max);
         for(int ipmt=0;ipmt<391;ipmt++){
@@ -265,11 +264,13 @@ public class RICHmonitor extends DetectorMonitor {
             int rows = bank.rows();
             for(int i = 0; i < rows; i++){
                 int    sector = bank.getByte("sector",i);
-                int     tileID = bank.getByte("layer",i);
+                int     tileID = bank.getByte("layer",i) & 0xFF;
                 short    channel = bank.getShort("component",i);
                 int       TDC = bank.getInt("TDC",i);
                 int pmt = tile2pmt[tileID-1][(channel-1)/64];
                 int pixel = (channel-1)%64;
+                if(tileID>128)
+                    System.out.println(channel);
                 //System.out.println(pmt + " " + pixel);
                 //int    TDC2 = bank.getInt("TDC2",i);
                 //int     TDCdifference = TDC2 - TDC1;
