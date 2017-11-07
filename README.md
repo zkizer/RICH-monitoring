@@ -1,5 +1,5 @@
-# KPP-monitoring
-CLAS12 monitoring plots GUI
+# RICH-monitoring
+CLAS12 RICH monitoring plots GUI
 
 ## Using sub-tabs
 Each detector monitor has 1 sub-tab by default.
