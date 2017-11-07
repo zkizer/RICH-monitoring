@@ -299,7 +299,7 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
     @Override
     public void processShape(DetectorShape2D shape) {
         System.out.println("SHAPE SELECTED = " + shape.getDescriptor());
-        if(shape.getDescriptor().getType()== DetectorType.RICH){
+        if(shape.getDescriptor().getType()== DetectorType.){
             rmon.UpdatedHistos(shape);
         }
     }
