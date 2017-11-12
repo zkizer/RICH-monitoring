@@ -284,7 +284,7 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
     public void processShape(DetectorShape2D shape) {
         System.out.println("SHAPE SELECTED = " + shape.getDescriptor());
         if (shape.getDescriptor().getType() == DetectorType.RICH) {
-            rmon.UpdatedHistos(shape);
+            rmon.updateHistos(shape);
         }
     }
 

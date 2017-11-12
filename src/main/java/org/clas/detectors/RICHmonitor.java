@@ -25,7 +25,6 @@ public class RICHmonitor extends DetectorMonitor {
     private final double dimension = 10;
     private final double PMTsep = dimension / 8;
     private DetectorShape2D[][] Pixels = new DetectorShape2D[391][64];
-    private double PixelPositions[][][] = new double[391][64][2];
     private int counter[][] = new int[391][64];
     private int max = 0;
 
@@ -236,7 +235,7 @@ public class RICHmonitor extends DetectorMonitor {
         this.getDetectorCanvas().getCanvas("RICH Occ").draw(this.getDataGroup().getItem(0, 0, 0));
     }
 
-    public void UpdatedHistos(DetectorShape2D shape) {
+    public void updateHistos(DetectorShape2D shape) {
         //when shape is selected, draw the histogram for the 8x8 pixel array
         int pmt = shape.getDescriptor().getComponent();
 
@@ -296,28 +295,7 @@ public class RICHmonitor extends DetectorMonitor {
         }
     }
 
-    /*
-    @Override
-    public void plotEvent(DataEvent event){
-        if(event.hasBank("RICH::tdc")==true){
-            DataBank  bank = event.getBank("RICH::tdc");
-            int rows = bank.rows();
-            for(int i = 0; i < rows; i++){
-                int    sector = bank.getByte("sector",i);
-                int     pmt = bank.getByte("layer",i);
-                int    pixel = bank.getShort("component",i);
-                if(pixel>0 && pixel<65 && pmt>0 && pmt<=391){
-                    if(this.counter[pmt-1][pixel-1]==1)
-                        this.getDetectorView().getView().addShape("RICH",this.Pixels[pmt-1][pixel-1]);
-                    this.getDetectorView().getView().getAxis("RICH").setMinMax(0.0,this.max);
-                    this.getDetectorView().getView().getColorAxis().setRange(0.0,this.max);
-                    this.Pixels[pmt-1][pixel-1].setCounter(this.counter[pmt-1][pixel-1]);
-                }
-            }
-            this.getDetectorView().update();
-       }       
-    }
-     */
+
     @Override
     public void drawDetector() {
         double xpos = 0;
@@ -343,8 +321,6 @@ public class RICHmonitor extends DetectorMonitor {
                         pixel.setColor(0, 0, 0);
                         double posx = (irow - 1) * (dimension + PMTsep) / 2 - dimension / 2 - (ipmt - 1) * (dimension + PMTsep) + (j) * pixsize + pixsize / 2;
                         double posy = (irow - 1) * (dimension + PMTsep) + dimension / 2 - (i) * pixsize - pixsize / 2;
-                        this.PixelPositions[pmtcount - 1][pixelcount][0] = posx;
-                        this.PixelPositions[pmtcount - 1][pixelcount][1] = posy;
                         pixel.getShapePath().translateXYZ(posx, -posy, 0);
                         pixel.setCounter(0);
                         this.Pixels[pmtcount - 1][pixelcount] = pixel;
