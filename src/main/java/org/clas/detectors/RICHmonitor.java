@@ -25,11 +25,8 @@ public class RICHmonitor extends DetectorMonitor {
     private final int nleftTile[] = {2, 5, 8, 11, 15, 19, 23, 28, 33, 38, 44, 50, 56, 63, 70, 77, 85, 93, 101, 110, 119, 128, 138};
     private final int chan2pix[] = {60, 58, 59, 57, 52, 50, 51, 49, 44, 42, 43, 41, 36, 34, 35, 33, 28, 26, 27, 25, 20, 18, 19, 17, 12, 10, 11, 9, 4, 2, 3, 1, 5, 7, 6, 8, 13, 15, 14, 16, 21, 23, 22, 24, 29, 31, 30, 32, 37, 39, 38, 40, 45, 47, 46, 48, 53, 55, 54, 56, 61, 63, 62, 64};
     private final double pmtW = 8;
-    private RICHtile rtile[
-    nleftTile 
-    [nleftTile.length
-
-    -1]];
+    private RICHtile[] rtile = new RICHtile[nleftTile[nleftTile.length - 1]];
+    private PixelXY[][] pixXY = new PixelXY[nleftTile[nleftTile.length - 1]][192];
 
     public RICHmonitor(String name) {
         super(name);
@@ -40,7 +37,7 @@ public class RICHmonitor extends DetectorMonitor {
     @Override
     public void createHistos() {
         this.setNumberOfEvents(0);
-        H2F occRICH = new H2F("occRICH", "TDC", 252, 0, 252, 207, 0, 207);
+        H2F occRICH = new H2F("occRICH", "TDC", 240, -120, 120, 210, 0, 210);
         DataGroup occrich = new DataGroup(1, 1);
         occrich.addDataSet(occRICH, 0);
         this.getDataGroup().add(occrich, 0, 0, 0);
@@ -151,17 +148,26 @@ public class RICHmonitor extends DetectorMonitor {
 
         double y0 = 0;
         for (int irow = 0, itile = 0; irow < nleftTile.length; irow++) {
-            double x0 = (3 + irow * 0.5) * pmtW + Math.ceil((6 + irow) / 3.0) * pmtW / 20.0;
+            double x0 = (3 + irow * 0.5) * pmtW + Math.ceil((6 + irow) / 3.0);
             for (; itile < nleftTile[irow]; itile++) {
+                System.out.println(itile);
                 RICHtile r1 = new RICHtile(itile + 1, Arrays.asList(twotilers).contains(itile + 1) ? 2 : 3);
                 r1.setPosition(x0 - r1.getWidth(), y0);
                 for (DetectorShape2D pmt : r1.pmts) {
                     this.getDetectorView().getView().addShape("RICH", pmt);
                 }
                 rtile[itile] = r1;
-                x0 -= r1.getWidth() + 0.1 * pmtW;
+                x0 -= r1.getWidth() + 1;
+                PixelXY pp = r1.getPixel(0,0);
+                System.out.println(pp.x+" "+pp.y);
+                pp = r1.getPixel(0,16);
+                System.out.println(pp.x+" "+pp.y);
+                pp = r1.getPixel(0,63);
+                System.out.println(pp.x+" "+pp.y);
+                pp = r1.getPixel(1,0);
+                System.out.println(pp.x+" "+pp.y);
             }
-            y0 -= pmtW * 1.1;
+            y0 -= pmtW + 1;
         }
 
     }
@@ -180,7 +186,6 @@ public class RICHmonitor extends DetectorMonitor {
 
         private int nmapmts;
         private DetectorShape2D pmts[];
-        private final int npixs = 64;
         PixelXY[] pxy = new PixelXY[192];
 
         RICHtile(int id) {
@@ -205,17 +210,18 @@ public class RICHmonitor extends DetectorMonitor {
 
         void setPosition(double x0, double y0) {
             for (int imaroc = 0; imaroc < nmapmts; imaroc++) {
-                pmts[imaroc].getShapePath().translateXYZ(x0 + (nmapmts - imaroc - 1) * pmtW, y0, 0.0);
-                for(int irow)
+                double x1 = x0 + (nmapmts - imaroc - 1) * pmtW;
+                pmts[imaroc].getShapePath().translateXYZ(x1, y0, 0.0);
+                for(int irow=0;irow<8;irow++){
+                    for(int icol=0;icol<8;icol++){
+                        pxy[imaroc*64+irow*8+icol] = new PixelXY(x1+icol, y0+irow);
+                    }
+                }
             }
         }
-        
-        PixelXY getPixel(int channel){
-            int imaroc = (channel-1)/64;
-            int ipix = (channel-1)%64;
-            if(nmapmts==2) imaroc--;
-            
-        }
 
+        PixelXY getPixel(int imaroc, int ipix){
+            return pxy[imaroc*64+ipix];
+        }
     }
 }
