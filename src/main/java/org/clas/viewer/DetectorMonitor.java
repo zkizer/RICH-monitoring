@@ -27,7 +27,7 @@ import org.jlab.utils.groups.IndexedList;
  *
  * @author devita
  */
-public class DetectorMonitor implements IDataEventListener {
+public abstract class DetectorMonitor implements IDataEventListener {
 
     private final String detectorName;
     private ArrayList<String> detectorTabNames = new ArrayList();
@@ -51,13 +51,9 @@ public class DetectorMonitor implements IDataEventListener {
         this.numberOfEvents = 0;
     }
 
-    public void analyze() {
-        // analyze detector data at the end of data processing
-    }
+    public abstract void analyze();
 
-    public void createHistos() {
-        // initialize canvas and create histograms
-    }
+    public abstract void createHistos();
 
     @Override
     public void dataEventAction(DataEvent event) {
@@ -68,7 +64,6 @@ public class DetectorMonitor implements IDataEventListener {
             processEvent(event);
         } else if (event.getType() == DataEventType.EVENT_SINGLE) {
             processEvent(event);
-            plotEvent(event);
         } else if (event.getType() == DataEventType.EVENT_ACCUMULATE) {
             processEvent(event);
         } else if (event.getType() == DataEventType.EVENT_STOP) {
@@ -76,9 +71,7 @@ public class DetectorMonitor implements IDataEventListener {
         }
     }
 
-    public void drawDetector() {
-
-    }
+    public abstract void drawDetector();
 
     public EmbeddedCanvasTabbed getDetectorCanvas() {
         return detectorCanvas;
@@ -134,17 +127,8 @@ public class DetectorMonitor implements IDataEventListener {
         plotHistos();
     }
 
-    public void processEvent(DataEvent event) {
-        // process event
-    }
-
-    public void plotEvent(DataEvent event) {
-        // process event
-    }
-
-    public void plotHistos() {
-
-    }
+    public abstract void processEvent(DataEvent event);
+    public abstract void plotHistos();
 
     public void printCanvas(String dir) {
         // print canvas to files
@@ -187,77 +171,9 @@ public class DetectorMonitor implements IDataEventListener {
     public void setNumberOfEvents(int numberOfEvents) {
         this.numberOfEvents = numberOfEvents;
     }
-
+    
     @Override
-    public void timerUpdate() {
-
+    public void timerUpdate(){
+        
     }
-
-    public void readDataGroup(TDirectory dir) {
-        String folder = this.getDetectorName() + "/";
-        System.out.println("Reading from: " + folder);
-        DataGroup sum = this.getDetectorSummary();
-        int nrows = sum.getRows();
-        int ncols = sum.getColumns();
-        int nds = nrows * ncols;
-        DataGroup newSum = new DataGroup(ncols, nrows);
-        for (int i = 0; i < nds; i++) {
-            List<IDataSet> dsList = sum.getData(i);
-            for (IDataSet ds : dsList) {
-                System.out.println("\t --> " + ds.getName());
-                newSum.addDataSet(dir.getObject(folder, ds.getName()), i);
-            }
-        }
-        this.setDetectorSummary(newSum);
-        Map<Long, DataGroup> map = this.getDataGroup().getMap();
-        for (Map.Entry<Long, DataGroup> entry : map.entrySet()) {
-            Long key = entry.getKey();
-            DataGroup group = entry.getValue();
-            nrows = group.getRows();
-            ncols = group.getColumns();
-            nds = nrows * ncols;
-            DataGroup newGroup = new DataGroup(ncols, nrows);
-            for (int i = 0; i < nds; i++) {
-                List<IDataSet> dsList = group.getData(i);
-                for (IDataSet ds : dsList) {
-                    System.out.println("\t --> " + ds.getName());
-                    newGroup.addDataSet(dir.getObject(folder, ds.getName()), i);
-                }
-            }
-            map.replace(key, newGroup);
-        }
-        this.plotHistos();
-    }
-
-    public void writeDataGroup(TDirectory dir) {
-        String folder = "/" + this.getDetectorName();
-        dir.mkdir(folder);
-        dir.cd(folder);
-        DataGroup sum = this.getDetectorSummary();
-        int nrows = sum.getRows();
-        int ncols = sum.getColumns();
-        int nds = nrows * ncols;
-        for (int i = 0; i < nds; i++) {
-            List<IDataSet> dsList = sum.getData(i);
-            for (IDataSet ds : dsList) {
-                System.out.println("\t --> " + ds.getName());
-                dir.addDataSet(ds);
-            }
-        }
-        Map<Long, DataGroup> map = this.getDataGroup().getMap();
-        for (Map.Entry<Long, DataGroup> entry : map.entrySet()) {
-            DataGroup group = entry.getValue();
-            nrows = group.getRows();
-            ncols = group.getColumns();
-            nds = nrows * ncols;
-            for (int i = 0; i < nds; i++) {
-                List<IDataSet> dsList = group.getData(i);
-                for (IDataSet ds : dsList) {
-                    System.out.println("\t --> " + ds.getName());
-                    dir.addDataSet(ds);
-                }
-            }
-        }
-    }
-
 }

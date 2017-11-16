@@ -71,38 +71,6 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
 
     public EventViewer() {
 
-        // create menu bar
-        menuBar = new JMenuBar();
-        JMenuItem menuItem;
-        JMenu file = new JMenu("File");
-        file.setMnemonic(KeyEvent.VK_A);
-        file.getAccessibleContext().setAccessibleDescription("File options");
-        menuItem = new JMenuItem("Open histograms file...", KeyEvent.VK_O);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
-        menuItem.getAccessibleContext().setAccessibleDescription("Open histograms file");
-        menuItem.addActionListener(this);
-        file.add(menuItem);
-        menuItem = new JMenuItem("Print histograms to file...", KeyEvent.VK_P);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK));
-        menuItem.getAccessibleContext().setAccessibleDescription("Print histograms to file");
-        menuItem.addActionListener(this);
-        file.add(menuItem);
-        menuItem = new JMenuItem("Save histograms to file...", KeyEvent.VK_S);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
-        menuItem.getAccessibleContext().setAccessibleDescription("Save histograms to file");
-        menuItem.addActionListener(this);
-        file.add(menuItem);
-        menuBar.add(file);
-        JMenu settings = new JMenu("Settings");
-        settings.setMnemonic(KeyEvent.VK_A);
-        settings.getAccessibleContext().setAccessibleDescription("Choose monitoring parameters");
-        menuItem = new JMenuItem("Set GUI update interval...", KeyEvent.VK_T);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.CTRL_MASK));
-        menuItem.getAccessibleContext().setAccessibleDescription("Set GUI update interval");
-        menuItem.addActionListener(this);
-        settings.add(menuItem);
-        menuBar.add(settings);
-
         // create main panel
         mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());
@@ -120,9 +88,7 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         GStyle.getAxisAttributesY().setTitleFontSize(18);
         GStyle.getAxisAttributesY().setLabelFontSize(14);
         CLAS12Canvas = new EmbeddedCanvasTabbed("CLAS12");
-        //CLAS12Canvas.getCanvas("CLAS12").divide(3,3);
-        //CLAS12Canvas.getCanvas("CLAS12").setGridX(false);
-        //CLAS12Canvas.getCanvas("CLAS12").setGridY(false);
+
         JPanel CLAS12View = new JPanel(new BorderLayout());
         JSplitPane splitPanel = new JSplitPane();
         splitPanel.setLeftComponent(CLAS12View);
@@ -132,71 +98,12 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
             this.monitors[k].getDetectorView().getView().addDetectorListener(this);
         }
         this.processorPane.addEventListener(this);
-
-        this.setCanvasUpdate(canvasUpdateTime);
     }
 
     public void actionPerformed(ActionEvent e) {
         System.out.println(e.getActionCommand());
-        if (e.getActionCommand() == "Set GUI update interval...") {
-            this.chooseUpdateInterval();
-        }
-        if (e.getActionCommand() == "Open histograms file...") {
-            String fileName = null;
-            JFileChooser fc = new JFileChooser();
-            fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-            File workingDirectory = new File(System.getProperty("user.dir") + "/ONLINE/kpphistos");
-            fc.setCurrentDirectory(workingDirectory);
-            int option = fc.showOpenDialog(null);
-            if (option == JFileChooser.APPROVE_OPTION) {
-                fileName = fc.getSelectedFile().getAbsolutePath();
-            }
-            if (fileName != null) {
-                this.loadHistosFromFile(fileName);
-            }
-        }
-        if (e.getActionCommand() == "Print histograms to file...") {
-            this.printHistosToFile();
-        }
-        if (e.getActionCommand() == "Save histograms to file...") {
-            DateFormat df = new SimpleDateFormat("MM-dd-yyyy_hh.mm.ss_aa");
-            String fileName = "mon12_" + this.runNumber + "_" + df.format(new Date()) + ".hipo";
-            JFileChooser fc = new JFileChooser();
-            File workingDirectory = new File(System.getProperty("user.dir") + "/ONLINE/kpphistos");
-            fc.setCurrentDirectory(workingDirectory);
-            File file = new File(fileName);
-            fc.setSelectedFile(file);
-            int returnValue = fc.showSaveDialog(null);
-            if (returnValue == JFileChooser.APPROVE_OPTION) {
-                fileName = fc.getSelectedFile().getAbsolutePath();
-            }
-            this.saveHistosToFile(fileName);
-        }
     }
 
-    public void chooseUpdateInterval() {
-        String s = (String) JOptionPane.showInputDialog(
-                null,
-                "GUI update interval (ms)",
-                " ",
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                null,
-                "1000");
-        if (s != null) {
-            int time = 1000;
-            try {
-                time = Integer.parseInt(s);
-            } catch (NumberFormatException e) {
-                JOptionPane.showMessageDialog(null, "Value must be a positive integer!");
-            }
-            if (time > 0) {
-                this.setCanvasUpdate(time);
-            } else {
-                JOptionPane.showMessageDialog(null, "Value must be a positive integer!");
-            }
-        }
-    }
 
     public JPanel getPanel() {
         return mainPanel;
@@ -241,45 +148,6 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         }
     }
 
-    public void loadHistosFromFile(String fileName) {
-        // TXT table summary FILE //
-        System.out.println("Opening file: " + fileName);
-        TDirectory dir = new TDirectory();
-        dir.readFile(fileName);
-        System.out.println(dir.getDirectoryList());
-        dir.cd();
-        dir.pwd();
-
-        for (int k = 0; k < this.monitors.length; k++) {
-            this.monitors[k].readDataGroup(dir);
-        }
-    }
-
-    public void printHistosToFile() {
-        DateFormat df = new SimpleDateFormat("MM-dd-yyyy_hh.mm.ss_aa");
-        String data = System.getProperty("user.dir") + "/ONLINE/kpphistos/mon12_" + this.runNumber + "_" + df.format(new Date());
-        File theDir = new File(data);
-        // if the directory does not exist, create it
-        if (!theDir.exists()) {
-            boolean result = false;
-            try {
-                theDir.mkdir();
-                result = true;
-            } catch (SecurityException se) {
-                //handle it
-            }
-            if (result) {
-                System.out.println("Created directory: " + data);
-            }
-        }
-        String fileName = data + "/clas12_canvas.png";
-        System.out.println(fileName);
-        this.CLAS12Canvas.getCanvas("CLAS12").save(fileName);
-        for (int k = 0; k < this.monitors.length; k++) {
-            this.monitors[k].printCanvas(data);
-        }
-    }
-
     @Override
     public void processShape(DetectorShape2D shape) {
         System.out.println("SHAPE SELECTED = " + shape.getDescriptor());
@@ -295,26 +163,6 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
             this.monitors[k].timerUpdate();
         }
         //this.plotSummaries();
-    }
-
-    public void saveHistosToFile(String fileName) {
-        // TXT table summary FILE //
-        TDirectory dir = new TDirectory();
-        for (int k = 0; k < this.monitors.length; k++) {
-            this.monitors[k].writeDataGroup(dir);
-        }
-        System.out.println("Saving histograms to file " + fileName);
-        dir.writeFile(fileName);
-    }
-
-    public void setCanvasUpdate(int time) {
-        System.out.println("Setting " + time + " ms update interval");
-        this.canvasUpdateTime = time;
-        this.CLAS12Canvas.getCanvas("CLAS12").initTimer(time);
-        this.CLAS12Canvas.getCanvas("CLAS12").update();
-        for (int k = 0; k < this.monitors.length; k++) {
-            this.monitors[k].setCanvasUpdate(time);
-        }
     }
 
     public void stateChanged(ChangeEvent e) {
