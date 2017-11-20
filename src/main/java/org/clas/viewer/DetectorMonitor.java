@@ -34,7 +34,7 @@ public abstract class DetectorMonitor implements IDataEventListener {
     private IndexedList<DataGroup> detectorData = new IndexedList<DataGroup>(3);
     private DataGroup detectorSummary = null;
     private DetectorOccupancy detectorOccupancy = new DetectorOccupancy();
-    private JPanel detectorPanel = null;
+    protected JPanel detectorPanel = null;
     private EmbeddedCanvasTabbed detectorCanvas = null;
     private DetectorPane2D detectorView = null;
     private int numberOfEvents;
@@ -60,7 +60,6 @@ public abstract class DetectorMonitor implements IDataEventListener {
 
         this.setNumberOfEvents(this.getNumberOfEvents() + 1);
         if (event.getType() == DataEventType.EVENT_START) {
-//            resetEventListener();
             processEvent(event);
         } else if (event.getType() == DataEventType.EVENT_SINGLE) {
             processEvent(event);
@@ -128,6 +127,7 @@ public abstract class DetectorMonitor implements IDataEventListener {
     }
 
     public abstract void processEvent(DataEvent event);
+
     public abstract void plotHistos();
 
     public void printCanvas(String dir) {
@@ -171,9 +171,5 @@ public abstract class DetectorMonitor implements IDataEventListener {
     public void setNumberOfEvents(int numberOfEvents) {
         this.numberOfEvents = numberOfEvents;
     }
-    
-    @Override
-    public void timerUpdate(){
-        
-    }
+
 }

@@ -3,24 +3,13 @@ package org.clas.viewer;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.io.File;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
-import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -33,7 +22,6 @@ import org.jlab.detector.view.DetectorPane2D;
 import org.jlab.detector.view.DetectorShape2D;
 import org.jlab.detector.base.DetectorType;
 import org.jlab.groot.base.GStyle;
-import org.jlab.groot.data.TDirectory;
 import org.jlab.groot.graphics.EmbeddedCanvasTabbed;
 import org.jlab.io.base.DataBank;
 import org.jlab.io.base.DataEvent;
@@ -52,7 +40,6 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
     List<DetectorPane2D> DetectorPanels = new ArrayList<DetectorPane2D>();
     JTabbedPane tabbedpane = null;
     JPanel mainPanel = null;
-    JMenuBar menuBar = null;
     DataSourceProcessorPane processorPane = null;
     EmbeddedCanvasTabbed CLAS12Canvas = null;
 
@@ -98,12 +85,13 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
             this.monitors[k].getDetectorView().getView().addDetectorListener(this);
         }
         this.processorPane.addEventListener(this);
+        this.setCanvasUpdate(canvasUpdateTime);
+
     }
 
     public void actionPerformed(ActionEvent e) {
         System.out.println(e.getActionCommand());
     }
-
 
     public JPanel getPanel() {
         return mainPanel;
@@ -131,7 +119,6 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
                 this.runNumber = this.getRunNumber(event);
             }
             if (this.runNumber != this.getRunNumber(event)) {
-//                this.saveToFile("mon12_histo_run_" + runNumber + ".hipo");
                 this.runNumber = this.getRunNumber(event);
                 resetEventListener();
             }
@@ -177,13 +164,22 @@ public class EventViewer implements IDataEventListener, DetectorListener, Action
         }
     }
 
+    public void setCanvasUpdate(int time) {
+        System.out.println("Setting " + time + " ms update interval");
+        this.canvasUpdateTime = time;
+        this.CLAS12Canvas.getCanvas("CLAS12").initTimer(time);
+        this.CLAS12Canvas.getCanvas("CLAS12").update();
+        for (int k = 0; k < this.monitors.length; k++) {
+            this.monitors[k].setCanvasUpdate(time);
+        }
+    }
+    
     public static void main(String[] args) {
         JFrame frame = new JFrame("MON12");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         EventViewer viewer = new EventViewer();
         //frame.add(viewer.getPanel());
         frame.add(viewer.mainPanel);
-        frame.setJMenuBar(viewer.menuBar);
         frame.setSize(1400, 800);
         frame.setVisible(true);
     }

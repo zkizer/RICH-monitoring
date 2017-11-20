@@ -5,7 +5,25 @@
  */
 package org.clas.detectors;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JCheckBox;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.clas.viewer.DetectorMonitor;
 import org.jlab.detector.base.DetectorType;
 import org.jlab.detector.view.DetectorShape2D;
@@ -27,118 +45,161 @@ public class RICHmonitor extends DetectorMonitor {
     private final double pmtW = 8;
     private RICHtile[] rtile = new RICHtile[nleftTile[nleftTile.length - 1]];
     private PixelXY[][] pixXY = new PixelXY[nleftTile[nleftTile.length - 1]][192];
+    private Boolean autoScaled = false;
 
     public RICHmonitor(String name) {
         super(name);
-        this.setDetectorTabNames("RICH Occupancy", "TDC");
+        this.setDetectorTabNames("TDC0", "TDC1", "delta TDC", "Occupancy 1D", "RICH Occupancy");
         this.init(true);
+
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.LINE_AXIS));
+        JCheckBox chbox = new JCheckBox("Log Z for occupancy");
+        chbox.addChangeListener(new CheckBoxListener());
+        JLabel lbl0 = new JLabel("Set maximum");
+        JLabel lbl1 = new JLabel("%");
+
+        JFormattedTextField maxField = new JFormattedTextField(NumberFormat.getNumberInstance());
+        maxField.setValue(new Double(100));
+        maxField.setColumns(3);
+        maxField.addActionListener(new MaxFieldListener());
+
+        topPanel.add(lbl0);
+        topPanel.add(maxField);
+        topPanel.add(lbl1);
+        topPanel.add(Box.createHorizontalStrut(15));
+        topPanel.add(new JSeparator(JSeparator.VERTICAL));
+        topPanel.add(Box.createHorizontalStrut(15));
+        topPanel.add(chbox);
+
+        getDetectorView().initUI();
+        getDetectorView().getToolbar().add(topPanel);
+    }
+
+    private class MaxFieldListener implements ActionListener {
+
+        public void actionPerformed(ActionEvent evt) {
+            JFormattedTextField source = (JFormattedTextField) evt.getSource();
+            double fraction = Double.parseDouble(source.getText()) / 100.0;
+            System.out.println(fraction);
+            double newmax = getDataGroup().getItem(0, 0, 0).getH2F("occRICH").getMaximum() * fraction;
+            getDetectorCanvas().getCanvas("RICH Occupancy").getPad().getAxisZ().setRange(0, newmax);
+            getDetectorCanvas().getCanvas("Occupancy 1D").getPad().getAxisY().setRange(0, newmax);
+        }
+    }
+
+    private class CheckBoxListener implements ChangeListener {
+
+        public void stateChanged(ChangeEvent e) {
+            JCheckBox source = (JCheckBox) e.getSource();
+            getDetectorCanvas().getCanvas("RICH Occupancy").getPad().getAxisZ().setLog(source.isSelected());
+            getDetectorCanvas().getCanvas("Occupancy 1D").getPad().getAxisY().setLog(source.isSelected());
+        }
     }
 
     @Override
     public void createHistos() {
         this.setNumberOfEvents(0);
-        H2F occRICH = new H2F("occRICH", "TDC", 240, -120, 120, 210, 0, 210);
+        H2F occRICH = new H2F("occRICH", "TDC", 250, -120, 130, 220, -15, 205);
         DataGroup occrich = new DataGroup(1, 1);
         occrich.addDataSet(occRICH, 0);
         this.getDataGroup().add(occrich, 0, 0, 0);
+        H1F occRICH1D = new H1F("occRICH", "TDC", 30000, 0, 30000);
+        DataGroup grocc1D = new DataGroup(1, 1);
+        grocc1D.addDataSet(occRICH1D, 0);
+        this.getDataGroup().add(grocc1D, 0, 0, 1);
 
-        //build histograms for pixels
-        int pmtcount = 1;
-        for (int irow = 1; irow <= 1; irow++) {
-            int nPMTinaRow = 5 + irow;
-            for (int ipmt = 1; ipmt <= nPMTinaRow; ipmt++) {
-                DataGroup tdc1 = new DataGroup(8, 8);
-                DataGroup tdc2 = new DataGroup(8, 8);
-                DataGroup tdcdifference = new DataGroup(8, 8);
-                int pixcount = 1;
-                for (int i = 1; i <= 8; i++) {
-                    for (int j = 1; j <= 8; j++) {
-                        H1F TDC1 = new H1F("TDC1 pixel" + pixcount, "TDC1 pixel" + pixcount, 10, 15, 1000);
-                        TDC1.setTitle("PMT " + pmtcount + " Pixel " + pixcount);
-                        TDC1.setFillColor(38);
-                        tdc1.addDataSet(TDC1, pixcount - 1);
-                        //H1F TDC2 = new H1F("TDC2 pixel"+pixcount,"TDC2 pixel"+pixcount,10,0,1000);
-                        //TDC2.setTitle("PMT "+pmtcount+" Pixel "+pixcount);
-                        //TDC2.setFillColor(38);
-                        //tdc2.addDataSet(TDC2,pixcount-1);
-                        //H1F TDCdiff = new H1F("TDC difference pixel"+pixcount,"TDC difference pixel"+pixcount,10,0,50);
-                        //TDCdiff.setTitle("PMT "+pmtcount+" Pixel "+pixcount);
-                        //TDCdiff.setFillColor(38);
-                        //tdcdifference.addDataSet(TDCdiff,pixcount-1);
-                        pixcount++;
+        for (int itile = 0; itile < nleftTile[nleftTile.length - 1]; itile++) {
+            for (int imaroc = 0; imaroc < 3; imaroc++) {
+                for (int itdc = 0; itdc < 3; itdc++) {
+                    DataGroup grtdc = new DataGroup(8, 8);
+                    for (int irow = 0; irow < 8; irow++) {
+                        for (int icol = 0; icol < 8; icol++) {
+                            int ipix = irow * 8 + icol;
+                            H1F htdc;
+                            if (itdc < 2) {
+                                htdc = new H1F("htdc" + (ipix + 1), "tile " + (itile + 1) + " pmt " + imaroc + " pix " + (ipix + 1), 200, 150, 550);
+                            } else {
+                                htdc = new H1F("htdc" + (ipix + 1), "tile " + (itile + 1) + " pmt " + imaroc + " pix " + (ipix + 1), 75, 0, 150);
+                            }
+
+                            htdc.setFillColor(38);
+                            grtdc.addDataSet(htdc, ipix);
+                        }
                     }
+                    this.getDataGroup().add(grtdc, itdc + 1, itile, imaroc);
                 }
-                this.getDataGroup().add(tdc1, pmtcount, 0, 0);
-                this.getDataGroup().add(tdc2, pmtcount, 1, 0);
-                this.getDataGroup().add(tdcdifference, pmtcount, 2, 0);
-                pmtcount++;
             }
         }
     }
 
     @Override
     public void analyze() {
-        /*
-        this.getDetectorView().getView().getAxis("RICH").setMinMax(0.0, this.max);
-        this.getDetectorView().getView().getColorAxis().setRange(0.0, this.max);
-        for (int ipmt = 0; ipmt < 391; ipmt++) {
-            for (int ipixel = 0; ipixel < 64; ipixel++) {
-                this.Pixels[ipmt][ipixel].setCounter(this.counter[ipmt][ipixel]);
-                if (this.counter[ipmt][ipixel] == 1) {
-                    this.getDetectorView().getView().addShape("RICH", this.Pixels[ipmt][ipixel]);
-                }
-            }
-        }
-        this.getDetectorView().update();
-         */
+
     }
 
     @Override
     public void plotHistos() {
         this.getDetectorCanvas().getCanvas("RICH Occupancy").draw(this.getDataGroup().getItem(0, 0, 0));
+        this.getDetectorCanvas().getCanvas("Occupancy 1D").draw(this.getDataGroup().getItem(0, 0, 1));
     }
 
     public void updateHistos(DetectorShape2D shape) {
         //when shape is selected, draw the histogram for the 8x8 pixel array
-        int pmt = shape.getDescriptor().getComponent();
+        int tileId = shape.getDescriptor().getLayer();
+        int imaroc = shape.getDescriptor().getComponent();
 
-        this.getDetectorCanvas().getCanvas("TDC").clear();
-        this.getDetectorCanvas().getCanvas("TDC").draw(this.getDataGroup().getItem(pmt, 0, 0));
-        this.getDetectorCanvas().getCanvas("TDC").update();
+        String[] ttl = new String[]{"TDC0", "TDC1", "delta TDC"};
+
+        for (int itdc = 0; itdc < ttl.length; itdc++) {
+            this.getDetectorCanvas().getCanvas(ttl[itdc]).clear();
+            this.getDetectorCanvas().getCanvas(ttl[itdc]).draw(this.getDataGroup().getItem(itdc + 1, tileId - 1, imaroc));
+            this.getDetectorCanvas().getCanvas(ttl[itdc]).update();
+        }
     }
 
     @Override
     public void processEvent(DataEvent event) {
         // process event info and save into data group
 
+        Map<Integer, List<Integer>> tdcs = new HashMap<>();
+
         if (event.hasBank("RICH::tdc") == true) {
             DataBank bank = event.getBank("RICH::tdc");
             int rows = bank.rows();
-            for (int i = 0; i < rows; i++) {
-                int sector = bank.getByte("sector", i);
-                int tileID = bank.getByte("layer", i) & 0xFF;
-                short channel = bank.getShort("component", i);
-                int TDC = bank.getInt("TDC", i);
+            for (int irow = 0; irow < rows; irow++) {
+                int tileID = bank.getByte("layer", irow) & 0xFF;
+                short channel = bank.getShort("component", irow);
+                int edge = bank.getByte("order", irow);
+                int TDC = bank.getInt("TDC", irow);
 
-                int pmt = 0;
-                int pixel = (channel - 1) % 64;
-                if (tileID > 128) {
-                    System.out.println(channel);
-                }
-                //System.out.println(pmt + " " + pixel);
-                //int    TDC2 = bank.getInt("TDC2",i);
-                //int     TDCdifference = TDC2 - TDC1;
-                if (pixel >= 0 && pixel < 65 && pmt > 0 && pmt <= 391) {
-                    this.getDataGroup().getItem(0, 0, 0).getH2F("occRICH").fill(pmt, pixel + 1);
-                    this.getDataGroup().getItem(pmt, 0, 0).getH1F("TDC1 pixel" + (pixel + 1)).fill(TDC * 1.0);
-                    //this.getDataGroup().getItem(pmt,1,0).getH1F("TDC2 pixel"+pixel).fill(TDC2*1.0);
-                    //this.getDataGroup().getItem(pmt,2,0).getH1F("TDC difference pixel"+pixel).fill(TDCdifference*1.0);
+                int imaroc = (channel - 1) / 64;
+                int ipix = chan2pix[(channel - 1) % 64] - 1;
 
-                    this.getDetectorView().getView().getAxis("RICH").setMinMax(0.0, 1);
-                    this.getDetectorView().getView().getColorAxis().setRange(0.0, 1);
+                PixelXY pxy = rtile[tileID - 1].getPixel(imaroc, ipix);
+                this.getDataGroup().getItem(0, 0, 0).getH2F("occRICH").fill(pxy.x, pxy.y);
+                this.getDataGroup().getItem(0, 0, 1).getH1F("occRICH").fill(tileID * 192 + channel - 1);
+
+                this.getDataGroup().getItem(edge + 1, tileID - 1, imaroc).getH1F("htdc" + (ipix + 1)).fill(TDC);
+
+                Integer id = tileID * 1000 + imaroc * 100 + ipix;
+                if (!tdcs.containsKey(id)) {
+                    tdcs.put(id, new ArrayList<Integer>());
                 }
+                tdcs.get(id).add(TDC);
             }
-            this.getDetectorView().update();
+        }
+
+        for (Map.Entry<Integer, List<Integer>> entry : tdcs.entrySet()) {
+            if (entry.getValue().size() > 1) {
+                Collections.sort(entry.getValue());
+                int tileID = entry.getKey() / 1000;
+                int imaroc = (entry.getKey() % 1000) / 100;
+                int ipix = entry.getKey() % 64;
+                int t0 = entry.getValue().get(0);
+                int deltaT = entry.getValue().get(1) - t0;
+                this.getDataGroup().getItem(3, tileID - 1, imaroc).getH1F("htdc" + (ipix + 1)).fill(deltaT);
+            }
         }
     }
 
@@ -148,9 +209,8 @@ public class RICHmonitor extends DetectorMonitor {
 
         double y0 = 0;
         for (int irow = 0, itile = 0; irow < nleftTile.length; irow++) {
-            double x0 = (3 + irow * 0.5) * pmtW + Math.ceil((6 + irow) / 3.0);
+            double x0 = (3 + irow * 0.5) * pmtW + Math.ceil((6 + irow) / 6.0);
             for (; itile < nleftTile[irow]; itile++) {
-                System.out.println(itile);
                 RICHtile r1 = new RICHtile(itile + 1, Arrays.asList(twotilers).contains(itile + 1) ? 2 : 3);
                 r1.setPosition(x0 - r1.getWidth(), y0);
                 for (DetectorShape2D pmt : r1.pmts) {
@@ -158,16 +218,9 @@ public class RICHmonitor extends DetectorMonitor {
                 }
                 rtile[itile] = r1;
                 x0 -= r1.getWidth() + 1;
-                PixelXY pp = r1.getPixel(0,0);
-                System.out.println(pp.x+" "+pp.y);
-                pp = r1.getPixel(0,16);
-                System.out.println(pp.x+" "+pp.y);
-                pp = r1.getPixel(0,63);
-                System.out.println(pp.x+" "+pp.y);
-                pp = r1.getPixel(1,0);
-                System.out.println(pp.x+" "+pp.y);
             }
             y0 -= pmtW + 1;
+
         }
 
     }
@@ -199,7 +252,7 @@ public class RICHmonitor extends DetectorMonitor {
             for (int imaroc = 0; imaroc < nmapmts; imaroc++) {
                 pmts[imaroc] = new DetectorShape2D();
                 pmts[imaroc].getDescriptor().setType(DetectorType.RICH);
-                pmts[imaroc].getDescriptor().setSectorLayerComponent(1, id, imaroc);
+                pmts[imaroc].getDescriptor().setSectorLayerComponent(1, id, nmapmts == 2 && imaroc == 1 ? imaroc + 1 : imaroc);
                 pmts[imaroc].createBarXY(pmtW, pmtW);
             }
         }
@@ -212,16 +265,30 @@ public class RICHmonitor extends DetectorMonitor {
             for (int imaroc = 0; imaroc < nmapmts; imaroc++) {
                 double x1 = x0 + (nmapmts - imaroc - 1) * pmtW;
                 pmts[imaroc].getShapePath().translateXYZ(x1, y0, 0.0);
-                for(int irow=0;irow<8;irow++){
-                    for(int icol=0;icol<8;icol++){
-                        pxy[imaroc*64+irow*8+icol] = new PixelXY(x1+icol, y0+irow);
+                for (int irow = 0; irow < 8; irow++) {
+                    for (int icol = 0; icol < 8; icol++) {
+                        pxy[imaroc * 64 + irow * 8 + icol] = new PixelXY(x1 + icol, -y0 - irow);
                     }
                 }
             }
         }
 
-        PixelXY getPixel(int imaroc, int ipix){
-            return pxy[imaroc*64+ipix];
+        PixelXY getPixel(int imaroc, int ipix) {
+            if (nmapmts == imaroc) {
+                imaroc--;
+            }
+            return pxy[imaroc * 64 + ipix];
         }
     }
+
+    @Override
+    public void timerUpdate() {
+        /*
+        int newmax = (int) this.getDataGroup().getItem(0, 0, 0).getH2F("occRICH").getMaximum();
+        slider.setMaximum(newmax);
+        slider.setMajorTickSpacing(newmax);
+        this.getDetectorView().update();
+         */
+    }
+
 }
