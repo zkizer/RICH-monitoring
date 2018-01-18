@@ -9,7 +9,7 @@
         <dependency>
             <groupId>org.jlab.coat</groupId>
             <artifactId>coat-libs</artifactId>
-            <version>4.0-SNAPSHOT</version>
+            <version>5.0-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
     </dependencies> 
@@ -20,6 +20,7 @@
             <url>https://clasweb.jlab.org/clas12maven</url>
         </repository>
     </repositories>
+
     <name>RICH-Monitoring</name>
     <properties>
         <maven.compiler.target>1.8</maven.compiler.target>
