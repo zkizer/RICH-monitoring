@@ -73,9 +73,7 @@ public final class RichPlotTDC extends RichPlot {
             @Override
             public void paint(Graphics g){
                 super.paint(g);
-                
-                System.out.println(getLayout());
-                paintChildren(g);
+//                paintChildren(g);
             }
         };
         canvas = canv;
@@ -85,9 +83,9 @@ public final class RichPlotTDC extends RichPlot {
         DragListener drag = new DragListener();
         lbl.addMouseListener(drag);
         lbl.addMouseMotionListener(drag);
-        canvas.add(lbl);
+//        canvas.add(lbl);
 
-        lbl.setBounds(10, 10, 1000, 1000);
+//        lbl.setBounds(10, 10, 1000, 1000);
 
         /*
         JPanel rightPanel = new JPanel(new BorderLayout());
