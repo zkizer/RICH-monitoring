@@ -7,12 +7,13 @@ package org.jlab.clas.fcmon.rich;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  *
  * @author kenjo
  */
-public class RichHit {
+public final class RichHitCollection {
 
     public enum Edge {
         LEADING, TRAILING
@@ -23,8 +24,9 @@ public class RichHit {
     public int ipix;
     public double x, y;
     public List<RichTDC> tdcList = new ArrayList<>();
+    public List<RichHit> hitList = new ArrayList<>();
 
-    public RichHit(int tileId, int imaroc, int ipix) {
+    public RichHitCollection(int tileId, int imaroc, int ipix) {
         this.itile = tileId - 1;
         this.imaroc = imaroc;
         this.ipix = ipix;
@@ -39,6 +41,23 @@ public class RichHit {
         tdcList.add(new RichTDC(edge, tdc));
     }
 
+    public void processHits() {
+        tdcList.sort((RichTDC t1, RichTDC t2) -> t1.tdc - t2.tdc);
+
+        ListIterator<RichTDC> iter = tdcList.listIterator();
+        while (iter.hasNext()) {
+            RichTDC rlead = iter.next();
+            if (rlead.edge==Edge.LEADING && iter.hasNext()) {
+                RichTDC rtrail = iter.next();
+                if (rtrail.edge == Edge.TRAILING) {
+                    hitList.add(new RichHit(rlead.tdc, rtrail.tdc - rlead.tdc));
+                } else {
+                    iter.previous();
+                }
+            }
+        }
+    }
+
     public class RichTDC {
 
         public Edge edge = Edge.LEADING;
@@ -49,6 +68,16 @@ public class RichHit {
                 this.edge = Edge.TRAILING;
             }
             this.tdc = tdc;
+        }
+    }
+
+    public class RichHit {
+
+        public int time, delta;
+
+        RichHit(int t0, int dt) {
+            time = t0;
+            delta = dt;
         }
     }
 }

@@ -23,8 +23,12 @@ public abstract class RichPlot {
     }
     public abstract void reset();
 
-    public abstract void fill(Map<Integer, RichHit> rhits);
+    public abstract void fill(Map<Integer, RichHitCollection> rhits);
 
+    public void process(Map<Integer, RichHitCollection> rhits){
+        return;
+    }
+    
     public void setCanvasUpdate(int time) {
         canvas.initTimer(time);
     }

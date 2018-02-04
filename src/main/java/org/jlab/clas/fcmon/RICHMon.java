@@ -13,7 +13,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.Timer;
-import org.jlab.clas.fcmon.rich.RichHit;
+import org.jlab.clas.fcmon.rich.RichHitCollection;
 import org.jlab.clas.fcmon.rich.RichPlotOccupancy;
 import org.jlab.clas.fcmon.rich.RichPlot;
 import org.jlab.clas.fcmon.rich.RichPlotMultiplicity;
@@ -46,7 +46,7 @@ public class RICHMon implements IDataEventListener, DetectorListener {
 
     private final int chan2pix[] = {60, 58, 59, 57, 52, 50, 51, 49, 44, 42, 43, 41, 36, 34, 35, 33, 28, 26, 27, 25, 20, 18, 19, 17, 12, 10, 11, 9, 4, 2, 3, 1, 5, 7, 6, 8, 13, 15, 14, 16, 21, 23, 22, 24, 29, 31, 30, 32, 37, 39, 38, 40, 45, 47, 46, 48, 53, 55, 54, 56, 61, 63, 62, 64};
 
-    private int canvasUpdateTime = 2000;
+    private int canvasUpdateTime = 1000;
     private final int analysisUpdateTime = 100;
     private int runNumber = 0;
     private int eventNumber = 0;
@@ -133,10 +133,10 @@ public class RICHMon implements IDataEventListener, DetectorListener {
             Boolean res = processEvent((HipoDataEvent) event);
 
             if (evType == DataEventType.EVENT_SINGLE) {
-                evntLbl.repaint();
-                tabPanel.getSelectedComponent().repaint();
-
-                if (!res) {
+                if (res) {
+                    evntLbl.repaint();
+                    tabPanel.getSelectedComponent().repaint();
+                } else {
                     processorPane.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "PlayNext"));
                 }
             }
@@ -146,7 +146,7 @@ public class RICHMon implements IDataEventListener, DetectorListener {
     public Boolean processEvent(HipoDataEvent event) {
         if (event.hasBank("RICH::tdc") == true) {
 
-            Map<Integer, RichHit> rhits = new HashMap<>();
+            Map<Integer, RichHitCollection> rhitMap = new HashMap<>();
             DataBank bank = event.getBank("RICH::tdc");
 
             int rows = bank.rows();
@@ -158,27 +158,31 @@ public class RICHMon implements IDataEventListener, DetectorListener {
                 int ipix = chan2pix[(channel - 1) % 64] - 1;
                 Integer id = tileID * 1000 + imaroc * 100 + ipix;
 
-                if (!rhits.containsKey(id)) {
+                if (!rhitMap.containsKey(id)) {
                     RichView.PixelXY pxy = detectorView.getPixel(tileID - 1, imaroc, ipix);
-                    RichHit rhit = new RichHit(tileID, imaroc, ipix);
+                    RichHitCollection rhit = new RichHitCollection(tileID, imaroc, ipix);
                     rhit.setXY(pxy.x, pxy.y);
-                    rhits.put(id, rhit);
+                    rhitMap.put(id, rhit);
                 }
 
                 int edge = bank.getByte("order", irow);
                 int TDC = bank.getInt("TDC", irow);
-                rhits.get(id).fill(edge, TDC);
+                rhitMap.get(id).fill(edge, TDC);
             }
 
-            for (RichHit rhit : rhits.values()) {
-                rhit.tdcList.sort((RichHit.RichTDC t1, RichHit.RichTDC t2) -> t1.tdc - t2.tdc);
+            for (RichHitCollection rhit : rhitMap.values()) {
+                rhit.processHits();
             }
 
             for (RichPlot rplot : richPlots) {
-                rplot.fill(rhits);
+                rplot.process(rhitMap);
             }
 
-            return true;
+            for (RichPlot rplot : richPlots) {
+                rplot.fill(rhitMap);
+            }
+
+            return !rhitMap.isEmpty();
         }
         return false;
     }

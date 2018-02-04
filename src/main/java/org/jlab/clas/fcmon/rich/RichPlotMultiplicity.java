@@ -11,7 +11,7 @@ import java.util.Map;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
-import org.jlab.clas.fcmon.rich.RichHit.Edge;
+import org.jlab.clas.fcmon.rich.RichHitCollection.Edge;
 import org.jlab.groot.data.H1F;
 import org.jlab.detector.view.DetectorShape2D;
 
@@ -89,7 +89,7 @@ public final class RichPlotMultiplicity extends RichPlot {
         for (int itile = 0; itile < ntiles; itile++) {
             for (int imaroc = 0; imaroc < nmarocs; imaroc++) {
                 hpmt[itile][imaroc] = new HistTDC();
-                hpmt[itile][imaroc].setTitle("Integrated over PMT: tile " + (itile + 1) + " maroc " + imaroc+";number of hits");
+                hpmt[itile][imaroc].setTitle("Integrated over PMT: tile " + (itile + 1) + " maroc " + imaroc + ";number of hits");
             }
         }
 
@@ -97,23 +97,52 @@ public final class RichPlotMultiplicity extends RichPlot {
     }
 
     @Override
-    public void fill(Map<Integer, RichHit> rhits) {
-        int nleadings = 0, ntrailings = 0;
-        for (RichHit rhit : rhits.values()) {
-            for (RichHit.RichTDC rtdc : rhit.tdcList) {
+    public void fill(Map<Integer, RichHitCollection> rhits) {
+        int ndetleadings = 0, ndettrailings = 0, ndethits = 0;
+        int[] nleadings = new int[2000];
+        int[] ntrailings = new int[2000];
+        int[] nhits = new int[2000];
+
+        for (RichHitCollection rhit : rhits.values()) {
+            int id = rhit.itile * 10 + rhit.imaroc;
+            for (RichHitCollection.RichTDC rtdc : rhit.tdcList) {
                 if (rtdc.edge == Edge.LEADING) {
-                    nleadings++;
+                    nleadings[id]++;
                 } else {
-                    ntrailings++;
+                    ntrailings[id]++;
                 }
             }
-            hpmt[rhit.itile][rhit.imaroc].htdc[0].fill(nleadings);
-            hpmt[rhit.itile][rhit.imaroc].htdc[1].fill(ntrailings);
-            hpmt[rhit.itile][rhit.imaroc].htdc[2].fill(nleadings + ntrailings);
+            nhits[id] += rhit.hitList.size();
+
+            ndethits += nhits[id];
+            ndettrailings += ntrailings[id];
+            ndetleadings += nleadings[id];
+
         }
-        hdet.htdc[0].fill(nleadings);
-        hdet.htdc[1].fill(ntrailings);
-        hdet.htdc[2].fill(nleadings + ntrailings);
+
+        for (int id = 0; id < 2000; id++) {
+            int itile = id / 10;
+            int imaroc = id % 10;
+            if (nleadings[id] != 0) {
+                hpmt[itile][imaroc].htdc[0].fill(nleadings[id]);
+            }
+            if (ntrailings[id] != 0) {
+                hpmt[itile][imaroc].htdc[1].fill(ntrailings[id]);
+            }
+            if (nhits[id] != 0) {
+                hpmt[itile][imaroc].htdc[2].fill(nhits[id]);
+            }
+        }
+
+        if (ndetleadings != 0) {
+            hdet.htdc[0].fill(ndetleadings);
+        }
+        if (ndettrailings != 0) {
+            hdet.htdc[1].fill(ndettrailings);
+        }
+        if (ndethits != 0) {
+            hdet.htdc[2].fill(ndethits);
+        }
     }
 
     @Override

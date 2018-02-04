@@ -20,7 +20,9 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.event.MouseInputAdapter;
-import org.jlab.clas.fcmon.rich.RichHit.Edge;
+import org.jlab.clas.fcmon.rich.RichHitCollection.Edge;
+import org.jlab.clas.fcmon.rich.RichHitCollection.RichHit;
+import org.jlab.clas.fcmon.rich.RichHitCollection.RichTDC;
 import org.jlab.groot.data.H1F;
 import org.jlab.detector.view.DetectorShape2D;
 import org.jlab.groot.graphics.EmbeddedCanvas;
@@ -69,30 +71,22 @@ public final class RichPlotTDC extends RichPlot {
         toolBar.add(tdcBox);
         toolBar.add(lvlBox);
 
-        EmbeddedCanvas canv = new EmbeddedCanvas(){
-            @Override
-            public void paint(Graphics g){
-                super.paint(g);
-//                paintChildren(g);
-            }
-        };
+        /*
         canvas = canv;
         canvas.setLayout(null);
-        
+
         ResizableLine lbl = new ResizableLine(0, 00, 1000, 500);
         DragListener drag = new DragListener();
         lbl.addMouseListener(drag);
         lbl.addMouseMotionListener(drag);
-//        canvas.add(lbl);
+        canvas.add(lbl);
 
-//        lbl.setBounds(10, 10, 1000, 1000);
+        lbl.setBounds(10, 10, 1000, 1000);
 
-        /*
         JPanel rightPanel = new JPanel(new BorderLayout());
         rightPanel.add(canvas);
         rightPanel.add(lbl);
-*/
-
+         */
         mainPanel.add(toolBar, BorderLayout.PAGE_START);
         mainPanel.add(canvas, BorderLayout.CENTER);
         mainPanel.setName("RICH TDC");
@@ -203,26 +197,24 @@ public final class RichPlotTDC extends RichPlot {
     }
 
     @Override
-    public void fill(Map<Integer, RichHit> rhits) {
-        for (RichHit rhit : rhits.values()) {
+    public void fill(Map<Integer, RichHitCollection> rhits) {
+        for (RichHitCollection rhit : rhits.values()) {
 
-            for (RichHit.RichTDC rtdc : rhit.tdcList) {
-                if (rtdc.edge == Edge.LEADING) {
-                    hdet.htdc0.fill(rtdc.tdc);
-                    hpmt[rhit.itile][rhit.imaroc].htdc0.fill(rtdc.tdc);
-                    hpix[rhit.itile][rhit.imaroc][rhit.ipix].htdc0.fill(rtdc.tdc);
-                } else {
-                    hdet.htdc1.fill(rtdc.tdc);
-                    hpmt[rhit.itile][rhit.imaroc].htdc1.fill(rtdc.tdc);
-                    hpix[rhit.itile][rhit.imaroc][rhit.ipix].htdc1.fill(rtdc.tdc);
-                }
-            }
+            for (RichHit rh : rhit.hitList) {
 
-            if (rhit.tdcList.size() > 1) {
-                double deltaT = rhit.tdcList.get(1).tdc - rhit.tdcList.get(0).tdc;
-                hdet.hdeltaT.fill(deltaT);
-                hpmt[rhit.itile][rhit.imaroc].hdeltaT.fill(deltaT);
-                hpix[rhit.itile][rhit.imaroc][rhit.ipix].hdeltaT.fill(deltaT);
+                int t1 = rh.time + rh.delta;
+
+                hdet.htdc0.fill(rh.time);
+                hpmt[rhit.itile][rhit.imaroc].htdc0.fill(rh.time);
+                hpix[rhit.itile][rhit.imaroc][rhit.ipix].htdc0.fill(rh.time);
+
+                hdet.htdc1.fill(t1);
+                hpmt[rhit.itile][rhit.imaroc].htdc1.fill(t1);
+                hpix[rhit.itile][rhit.imaroc][rhit.ipix].htdc1.fill(t1);
+
+                hdet.hdeltaT.fill(rh.delta);
+                hpmt[rhit.itile][rhit.imaroc].hdeltaT.fill(rh.delta);
+                hpix[rhit.itile][rhit.imaroc][rhit.ipix].hdeltaT.fill(rh.delta);
             }
         }
     }
