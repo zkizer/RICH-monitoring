@@ -161,7 +161,6 @@ public final class RichPlotOccupancy extends RichPlot {
                 npmthit++;
             }
         }
-        System.out.println(npmthit + " " + npmts);
         if (npmthit < npmts) {
             rhitMap.clear();
         }
