@@ -27,6 +27,7 @@ import org.jlab.groot.data.H1F;
 import org.jlab.detector.view.DetectorShape2D;
 import org.jlab.groot.graphics.EmbeddedCanvas;
 
+
 /**
  *
  * @author kenjo
@@ -39,14 +40,17 @@ public final class RichPlotTDC extends RichPlot {
         H1F htdc1 = new H1F("RICH TDC1", "TDC", 300, 0, 300);
         H1F hdeltaT = new H1F("RICH delta", "delta TDC", 150, 0, 150);
 
+
         public HistTDC() {
             htdc1.setLineColor(2);
         }
 
         public void setTitle(String title) {
+
             htdc0.setTitle(title);
             htdc1.setTitle(title);
             hdeltaT.setTitle(title);
+
         }
     }
 
@@ -137,11 +141,16 @@ public final class RichPlotTDC extends RichPlot {
     private void redraw() {
         canvas.clear();
         canvas.divide(1, 1);
+
+
+        canvas.setStatBoxFontSize(14);
         if (lvlBox.getSelectedIndex() == 0) {
             if (tdcBox.getSelectedIndex() == 0) {
                 canvas.draw(hdet.htdc0);
                 canvas.draw(hdet.htdc1, "same");
             } else {
+                canvas.cd(1);
+                hdet.hdeltaT.setOptStat("1111");
                 canvas.draw(hdet.hdeltaT);
             }
         } else if (lvlBox.getSelectedIndex() == 1) {
@@ -149,6 +158,7 @@ public final class RichPlotTDC extends RichPlot {
                 canvas.draw(hpmt[selectedITile][selectedIMaroc].htdc0);
                 canvas.draw(hpmt[selectedITile][selectedIMaroc].htdc1, "same");
             } else {
+                hpmt[selectedITile][selectedIMaroc].hdeltaT.setOptStat("1111");
                 canvas.draw(hpmt[selectedITile][selectedIMaroc].hdeltaT);
             }
         } else {
@@ -197,7 +207,7 @@ public final class RichPlotTDC extends RichPlot {
     }
 
     @Override
-    public void fill(Map<Integer, RichHitCollection> rhits) {
+   public void fill(Map<Integer, RichHitCollection> rhits) {
         for (RichHitCollection rhit : rhits.values()) {
 
             for (RichHit rh : rhit.hitList) {

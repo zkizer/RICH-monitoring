@@ -83,6 +83,8 @@ public class RICHMon implements IDataEventListener, DetectorListener {
             tabPanel.add(rplot.getPanel());
         }
 
+
+
         JSplitPane splitPane = new JSplitPane();
         splitPane.setLeftComponent(leftPanel);
         splitPane.setRightComponent(tabPanel);
@@ -90,9 +92,9 @@ public class RICHMon implements IDataEventListener, DetectorListener {
 
         mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());
-        mainPanel.add(splitPane, BorderLayout.CENTER);
         mainPanel.add(processorPane, BorderLayout.PAGE_END);
-
+        //mainPanel.add(splitPane, BorderLayout.CENTER);
+        mainPanel.add(tabPanel, BorderLayout.CENTER);
         detectorView.getView().addDetectorListener(this);
         processorPane.addEventListener(this);
 

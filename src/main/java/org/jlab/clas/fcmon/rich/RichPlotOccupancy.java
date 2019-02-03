@@ -24,6 +24,7 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
+import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.Timer;
@@ -33,6 +34,7 @@ import org.jlab.clas.fcmon.RichView.RICHtile;
 import org.jlab.clas.fcmon.rich.RichHitCollection.RichHit;
 import org.jlab.detector.view.DetectorShape2D;
 import org.jlab.groot.base.TColorPalette;
+import org.jlab.clas.fcmon.RICHMon;
 
 /**
  *
@@ -50,13 +52,16 @@ public final class RichPlotOccupancy extends RichPlot {
     private int leadingMin = 0, leadingMax = 300, trailingMin = 0, trailingMax = 300, deltaMin = 0, deltaMax = 150;
     private int npmts = 0;
 
-    public RichPlotOccupancy() {
+    private final JLabel evntLbl = new JLabel();
+    private final RichView detectorView;
+
+    public RichPlotOccupancy(){
         evdisBox = new JCheckBox("Event Display Mode");
         evdisBox.addActionListener(ev -> evdisMode = evdisBox.isSelected());
 
         JLabel lbl0 = new JLabel("Set maximum");
         JLabel lbl1 = new JLabel("%");
-        JSpinner scaleField = new JSpinner(new SpinnerNumberModel(5, 0, 100, 0.01));
+        JSpinner scaleField = new JSpinner(new SpinnerNumberModel(50, 0, 100, 0.01));
         scaleField.addChangeListener(ev -> scaleWeight = ((double) scaleField.getValue()) / 100.0);
 
         JPanel toolbars = new JPanel(new GridLayout(0, 1));
@@ -122,9 +127,27 @@ public final class RichPlotOccupancy extends RichPlot {
         toolbars.add(mainBar);
         toolbars.add(rangeBar);
 
+        JPanel leftPanel = new JPanel(new BorderLayout());
+        JToolBar toolBar = new JToolBar();
+        toolBar.setLayout(new FlowLayout());
+       toolBar.add(evntLbl);
+
+
+        detectorView = new RichView();
+
+        leftPanel.add(toolBar, BorderLayout.PAGE_START);
+        leftPanel.add(detectorView, BorderLayout.CENTER);
+
+        JSplitPane splitPane = new JSplitPane();
+        splitPane.setLeftComponent(leftPanel);
+        splitPane.setRightComponent(evdisPanel);
+        splitPane.setResizeWeight(0.10);
+
         mainPanel.add(toolbars, BorderLayout.PAGE_START);
-        mainPanel.add(evdisPanel, BorderLayout.CENTER);
+        mainPanel.add(splitPane, BorderLayout.CENTER);
         mainPanel.setName("RICH Occupancy");
+
+
         reset();
     }
 
@@ -221,7 +244,7 @@ public final class RichPlotOccupancy extends RichPlot {
 
         public RichPanel() {
             setLayout(null);
-            setBackground(Color.black);
+            setBackground(Color.lightGray);
 
             for (RICHtile rtile : rview.getTiles()) {
                 for (DetectorShape2D rpmt : rtile.getPMTs()) {
