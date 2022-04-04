@@ -53,7 +53,6 @@ public final class RichPlotOccupancy extends RichPlot {
     private int npmts = 0;
 
     private final JLabel evntLbl = new JLabel();
-    private final RichView detectorView;
 
     public RichPlotOccupancy(){
         evdisBox = new JCheckBox("Event Display Mode");
@@ -127,24 +126,8 @@ public final class RichPlotOccupancy extends RichPlot {
         toolbars.add(mainBar);
         toolbars.add(rangeBar);
 
-        JPanel leftPanel = new JPanel(new BorderLayout());
-        JToolBar toolBar = new JToolBar();
-        toolBar.setLayout(new FlowLayout());
-       toolBar.add(evntLbl);
-
-
-        detectorView = new RichView();
-
-        leftPanel.add(toolBar, BorderLayout.PAGE_START);
-        leftPanel.add(detectorView, BorderLayout.CENTER);
-
-        JSplitPane splitPane = new JSplitPane();
-        splitPane.setLeftComponent(leftPanel);
-        splitPane.setRightComponent(evdisPanel);
-        splitPane.setResizeWeight(0.10);
-
         mainPanel.add(toolbars, BorderLayout.PAGE_START);
-        mainPanel.add(splitPane, BorderLayout.CENTER);
+        mainPanel.add(evdisPanel, BorderLayout.CENTER);
         mainPanel.setName("RICH Occupancy");
 
 

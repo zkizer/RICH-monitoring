@@ -93,8 +93,8 @@ public class RICHMon implements IDataEventListener, DetectorListener {
         mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());
         mainPanel.add(processorPane, BorderLayout.PAGE_END);
-        //mainPanel.add(splitPane, BorderLayout.CENTER);
-        mainPanel.add(tabPanel, BorderLayout.CENTER);
+        mainPanel.add(splitPane, BorderLayout.CENTER);
+        //mainPanel.add(tabPanel, BorderLayout.CENTER);
         detectorView.getView().addDetectorListener(this);
         processorPane.addEventListener(this);
 
