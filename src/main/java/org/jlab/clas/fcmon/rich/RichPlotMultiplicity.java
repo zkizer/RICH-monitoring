@@ -18,6 +18,7 @@ import org.jlab.detector.view.DetectorShape2D;
 /**
  *
  * @author kenjo
+ * RICH 2 added by Zachary Nickischer at Duquesne Univeristy
  */
 public final class RichPlotMultiplicity extends RichPlot {
 
@@ -49,7 +50,7 @@ public final class RichPlotMultiplicity extends RichPlot {
     private HistTDC hdet = new HistTDC();
     private HistTDC[][] hpmt = new HistTDC[ntiles][nmarocs];
 
-    public RichPlotMultiplicity() {
+    public RichPlotMultiplicity(String name) {
         lvlBox = new JComboBox(new String[]{"detector", "pmt"});
         lvlBox.addActionListener(ev -> redraw());
         tdcBox = new JComboBox(new String[]{"leading", "trailing", "both"});
@@ -62,7 +63,7 @@ public final class RichPlotMultiplicity extends RichPlot {
 
         mainPanel.add(toolBar, BorderLayout.PAGE_START);
         mainPanel.add(canvas, BorderLayout.CENTER);
-        mainPanel.setName("Multiplicity");
+        mainPanel.setName(name);
 
         reset();
     }

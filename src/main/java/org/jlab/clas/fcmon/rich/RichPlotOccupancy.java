@@ -39,6 +39,7 @@ import org.jlab.clas.fcmon.RICHMon;
 /**
  *
  * @author kenjo
+ * RICH 2 added by Zachary Nickischer at Duquesne Univeristy
  */
 public final class RichPlotOccupancy extends RichPlot {
 
@@ -54,7 +55,7 @@ public final class RichPlotOccupancy extends RichPlot {
 
     private final JLabel evntLbl = new JLabel();
 
-    public RichPlotOccupancy(){
+    public RichPlotOccupancy(String name){
         evdisBox = new JCheckBox("Event Display Mode");
         evdisBox.addActionListener(ev -> evdisMode = evdisBox.isSelected());
 
@@ -128,7 +129,8 @@ public final class RichPlotOccupancy extends RichPlot {
 
         mainPanel.add(toolbars, BorderLayout.PAGE_START);
         mainPanel.add(evdisPanel, BorderLayout.CENTER);
-        mainPanel.setName("RICH Occupancy");
+       
+        mainPanel.setName(name);
 
 
         reset();

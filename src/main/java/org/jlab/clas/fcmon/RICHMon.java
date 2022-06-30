@@ -35,6 +35,7 @@ import org.jlab.io.task.IDataEventListener;
 /**
  *
  * @author kenjo
+ * RICH 2 added by Zachary Nickischer at Duquesne Univeristy
  */
 public class RICHMon implements IDataEventListener, DetectorListener {
 
@@ -52,11 +53,17 @@ public class RICHMon implements IDataEventListener, DetectorListener {
     private int eventNumber = 0;
 
     private final JLabel evntLbl = new JLabel();
+    private final JLabel evntLbl2 = new JLabel();
 
     private final RichPlot[] richPlots = {
-        new RichPlotOccupancy(),
-        new RichPlotTDC(),
-        new RichPlotMultiplicity()
+        new RichPlotOccupancy("RICH 2 Occupancy"),
+        new RichPlotTDC("RICH 2 TDC"),
+        new RichPlotMultiplicity("RICH 2 Multiplicity")
+    };
+    private final RichPlot[] richPlots2 = {
+        new RichPlotOccupancy("RICH 1 Occupancy"),
+        new RichPlotTDC("RICH 1 TDC"),
+        new RichPlotMultiplicity("RICH 1 Multiplicity")
     };
 
     public RICHMon() {
@@ -80,7 +87,12 @@ public class RICHMon implements IDataEventListener, DetectorListener {
 
         tabPanel = new JTabbedPane();
         for (RichPlot rplot : richPlots) {
-            tabPanel.add(rplot.getPanel());
+             tabPanel.add(rplot.getPanel());
+            
+        }
+        for (RichPlot rplot : richPlots2) {
+             tabPanel.add(rplot.getPanel());
+            
         }
 
 
@@ -132,7 +144,7 @@ public class RICHMon implements IDataEventListener, DetectorListener {
 
             this.eventNumber++;
 
-            Boolean res = processEvent((HipoDataEvent) event);
+            Boolean res = processEvent((HipoDataEvent) event, 1);
 
             if (evType == DataEventType.EVENT_SINGLE) {
                 if (res) {
@@ -142,48 +154,103 @@ public class RICHMon implements IDataEventListener, DetectorListener {
                     processorPane.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "PlayNext"));
                 }
             }
+            
+            Boolean res2 = processEvent((HipoDataEvent) event, 4);
+
+            if (evType == DataEventType.EVENT_SINGLE) {
+                if (res2) {
+                    evntLbl.repaint();
+                    tabPanel.getSelectedComponent().repaint();
+                } else {
+                    processorPane.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "PlayNext"));
+                }
+            }
+            
         }
     }
 
-    public Boolean processEvent(HipoDataEvent event) {
+    public Boolean processEvent(HipoDataEvent event, int sectorNumber) {
         if (event.hasBank("RICH::tdc") == true) {
 
             Map<Integer, RichHitCollection> rhitMap = new HashMap<>();
             DataBank bank = event.getBank("RICH::tdc");
-
             int rows = bank.rows();
             for (int irow = 0; irow < rows; irow++) {
-                int tileID = bank.getByte("layer", irow) & 0xFF;
-                short channel = bank.getShort("component", irow);
+                int sec = bank.getByte("sector", irow);
+                //RICH 2 sector 1
+                if (sectorNumber == 1 && sec == 1){
+                
+                    int tileID = bank.getByte("layer", irow) & 0xFF;
+                    short channel = bank.getShort("component", irow);
 
-                int imaroc = (channel - 1) / 64;
-                int ipix = chan2pix[(channel - 1) % 64] - 1;
-                Integer id = tileID * 1000 + imaroc * 100 + ipix;
+                    int imaroc = (channel - 1) / 64;
+                    int ipix = chan2pix[(channel - 1) % 64] - 1;
+                    Integer id = tileID * 1000 + imaroc * 100 + ipix;
 
-                if (!rhitMap.containsKey(id)) {
-                    RichView.PixelXY pxy = detectorView.getPixel(tileID - 1, imaroc, ipix);
-                    RichHitCollection rhit = new RichHitCollection(tileID, imaroc, ipix);
-                    rhit.setXY(pxy.x, pxy.y);
-                    rhitMap.put(id, rhit);
+
+                    if (!rhitMap.containsKey(id)) {
+                        RichView.PixelXY pxy = detectorView.getPixel(tileID - 1, imaroc, ipix);
+                        RichHitCollection rhit = new RichHitCollection(tileID, imaroc, ipix);
+                        rhit.setXY(pxy.x, pxy.y);
+                        rhitMap.put(id, rhit);
+                    }
+
+                    int edge = bank.getByte("order", irow);
+                    int TDC = bank.getInt("TDC", irow);
+                    rhitMap.get(id).fill(edge, TDC);
+                }
+                
+                //Rich 1 sector 4
+                if (sectorNumber == 4 && sec == 4){
+                
+                    int tileID = bank.getByte("layer", irow) & 0xFF;
+                    short channel = bank.getShort("component", irow);
+
+                    int imaroc = (channel - 1) / 64;
+                    int ipix = chan2pix[(channel - 1) % 64] - 1;
+                    Integer id = tileID * 1000 + imaroc * 100 + ipix;
+
+
+                    if (!rhitMap.containsKey(id)) {
+                        RichView.PixelXY pxy = detectorView.getPixel(tileID - 1, imaroc, ipix);
+                        RichHitCollection rhit = new RichHitCollection(tileID, imaroc, ipix);
+                        rhit.setXY(pxy.x, pxy.y);
+                        rhitMap.put(id, rhit);
+                    }
+
+                    int edge = bank.getByte("order", irow);
+                    int TDC = bank.getInt("TDC", irow);
+                    rhitMap.get(id).fill(edge, TDC);
+                }
+            }
+
+            if (sectorNumber == 1){
+                for (RichHitCollection rhit : rhitMap.values()) {
+                    rhit.processHits();
                 }
 
-                int edge = bank.getByte("order", irow);
-                int TDC = bank.getInt("TDC", irow);
-                rhitMap.get(id).fill(edge, TDC);
-            }
+                for (RichPlot rplot : richPlots) {
+                    rplot.process(rhitMap);
+                }
 
-            for (RichHitCollection rhit : rhitMap.values()) {
-                rhit.processHits();
+                for (RichPlot rplot : richPlots) {
+                    rplot.fill(rhitMap);
+                }
             }
+            
+            if (sectorNumber == 4){
+                for (RichHitCollection rhit : rhitMap.values()) {
+                    rhit.processHits();
+                }
 
-            for (RichPlot rplot : richPlots) {
-                rplot.process(rhitMap);
+                for (RichPlot rplot : richPlots2) {
+                    rplot.process(rhitMap);
+                }
+
+                for (RichPlot rplot : richPlots2) {
+                    rplot.fill(rhitMap);
+                }
             }
-
-            for (RichPlot rplot : richPlots) {
-                rplot.fill(rhitMap);
-            }
-
             return !rhitMap.isEmpty();
         }
         return false;
@@ -196,11 +263,17 @@ public class RICHMon implements IDataEventListener, DetectorListener {
             for (RichPlot rplot : richPlots) {
                 rplot.processShape(shape);
             }
+            for (RichPlot rplot : richPlots2) {
+                rplot.processShape(shape);
+            }
         }
     }
 
     public void repaint() {
         for (RichPlot rplot : richPlots) {
+            rplot.getPanel().repaint();
+        }
+        for (RichPlot rplot : richPlots2) {
             rplot.getPanel().repaint();
         }
     }
@@ -210,12 +283,18 @@ public class RICHMon implements IDataEventListener, DetectorListener {
         for (RichPlot rplot : richPlots) {
             rplot.reset();
         }
+        for (RichPlot rplot : richPlots2) {
+            rplot.reset();
+        }
     }
 
     public final void setCanvasUpdate(int time) {
         System.out.println("Setting " + time + " ms update interval");
         this.canvasUpdateTime = time;
         for (RichPlot rplot : richPlots) {
+            rplot.setCanvasUpdate(time);
+        }
+        for (RichPlot rplot : richPlots2) {
             rplot.setCanvasUpdate(time);
         }
 

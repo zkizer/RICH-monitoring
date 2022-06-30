@@ -31,6 +31,7 @@ import org.jlab.groot.graphics.EmbeddedCanvas;
 /**
  *
  * @author kenjo
+ * RICH 2 added by Zachary Nickischer at Duquesne Univeristy
  */
 public final class RichPlotTDC extends RichPlot {
 
@@ -63,7 +64,7 @@ public final class RichPlotTDC extends RichPlot {
     private HistTDC[][] hpmt = new HistTDC[ntiles][nmarocs];
     private HistTDC[][][] hpix = new HistTDC[ntiles][nmarocs][npixs];
 
-    public RichPlotTDC() {
+    public RichPlotTDC(String name) {
         tdcBox = new JComboBox(new String[]{"TDC", "Tover"});
         lvlBox = new JComboBox(new String[]{"detector", "pmt", "pixel"});
 
@@ -93,7 +94,7 @@ public final class RichPlotTDC extends RichPlot {
          */
         mainPanel.add(toolBar, BorderLayout.PAGE_START);
         mainPanel.add(canvas, BorderLayout.CENTER);
-        mainPanel.setName("RICH TDC");
+        mainPanel.setName(name);
 
         reset();
     }
