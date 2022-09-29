@@ -36,6 +36,7 @@ import org.jlab.io.task.IDataEventListener;
  *
  * @author kenjo
  * RICH 2 added by Zachary Nickischer at Duquesne Univeristy
+ * 
  */
 public class RICHMon implements IDataEventListener, DetectorListener {
 
@@ -65,12 +66,30 @@ public class RICHMon implements IDataEventListener, DetectorListener {
         new RichPlotTDC("RICH 1 TDC"),
         new RichPlotMultiplicity("RICH 1 Multiplicity")
     };
+    
+    
+    
+/*
+private Boolean RichPlotOccupancyLogZ = true;
 
+ public void setLogZ(boolean flag) {
+        this.RichPlotOccupancyLogZ = flag;
+    }
+ 
+ public Boolean getLogZ() {
+        return this.RichPlotOccupancyLogZ;
+    }
+ 
+*/
+ 
+ 
+ 
     public RICHMon() {
         GStyle.getAxisAttributesX().setTitleFontSize(18);
         GStyle.getAxisAttributesX().setLabelFontSize(14);
         GStyle.getAxisAttributesY().setTitleFontSize(18);
         GStyle.getAxisAttributesY().setLabelFontSize(14);
+        
 
         processorPane = new DataSourceProcessorPane();
         processorPane.setUpdateRate(analysisUpdateTime);
@@ -174,6 +193,7 @@ public class RICHMon implements IDataEventListener, DetectorListener {
 
             Map<Integer, RichHitCollection> rhitMap = new HashMap<>();
             DataBank bank = event.getBank("RICH::tdc");
+            
             int rows = bank.rows();
             for (int irow = 0; irow < rows; irow++) {
                 int sec = bank.getByte("sector", irow);
@@ -234,7 +254,12 @@ public class RICHMon implements IDataEventListener, DetectorListener {
                 }
 
                 for (RichPlot rplot : richPlots) {
+                    //The reset function below will cause the plot to go event by event
+                    //when using the right arrow > in the interface
+                    //It can be commented out to make the plot be a collective all the hits on a run
+                    rplot.reset();
                     rplot.fill(rhitMap);
+                    //rplot.setLog(getLogZ());
                 }
             }
             
@@ -248,7 +273,11 @@ public class RICHMon implements IDataEventListener, DetectorListener {
                 }
 
                 for (RichPlot rplot : richPlots2) {
+                    //The reset function below will cause the plot to go event by event
+                    //when using the right arrow > in the interface
+                    rplot.reset();
                     rplot.fill(rhitMap);
+                    
                 }
             }
             return !rhitMap.isEmpty();
@@ -275,6 +304,7 @@ public class RICHMon implements IDataEventListener, DetectorListener {
         }
         for (RichPlot rplot : richPlots2) {
             rplot.getPanel().repaint();
+            
         }
     }
 
@@ -293,9 +323,11 @@ public class RICHMon implements IDataEventListener, DetectorListener {
         this.canvasUpdateTime = time;
         for (RichPlot rplot : richPlots) {
             rplot.setCanvasUpdate(time);
+            
         }
         for (RichPlot rplot : richPlots2) {
             rplot.setCanvasUpdate(time);
+            
         }
 
         Timer updateTimer = new Timer(time, ev -> {
