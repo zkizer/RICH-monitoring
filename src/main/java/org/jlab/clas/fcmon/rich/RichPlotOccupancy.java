@@ -289,7 +289,7 @@ public final class RichPlotOccupancy extends RichPlot {
                     yy = (yy - ymin) * scale + offy;
 
                     if (!evdisMode) {
-                        g2.setPaint(colPalette.getColor3D(rpix.nhits, maxWeight*1.5, false));
+                        g2.setPaint(colPalette.getColor3D(rpix.nhits, maxWeight, false));
                     }
                     g2.fill(new Rectangle2D.Double(xx, yy, ww / 8, ww / 8));
                 }
